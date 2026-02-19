@@ -104,6 +104,28 @@ CREATE TRIGGER subscriptions_updated_at
   BEFORE UPDATE ON subscriptions
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
--- Storage バケット作成（Supabase ダッシュボードで手動作成も可）
--- INSERT INTO storage.buckets (id, name, public) VALUES ('product-images', 'product-images', false);
--- INSERT INTO storage.buckets (id, name, public) VALUES ('generated-videos', 'generated-videos', false);
+-- Storage バケット作成
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('product-images', 'product-images', false)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('generated-videos', 'generated-videos', false)
+ON CONFLICT (id) DO NOTHING;
+
+-- Storage RLS ポリシー: product-images
+CREATE POLICY "Users can upload own images"
+  ON storage.objects FOR INSERT
+  TO authenticated
+  WITH CHECK (bucket_id = 'product-images' AND (storage.foldername(name))[1] = auth.uid()::text);
+
+CREATE POLICY "Users can view own images"
+  ON storage.objects FOR SELECT
+  TO authenticated
+  USING (bucket_id = 'product-images' AND (storage.foldername(name))[1] = auth.uid()::text);
+
+-- Storage RLS ポリシー: generated-videos
+CREATE POLICY "Users can view own videos"
+  ON storage.objects FOR SELECT
+  TO authenticated
+  USING (bucket_id = 'generated-videos' AND (storage.foldername(name))[1] = auth.uid()::text);
