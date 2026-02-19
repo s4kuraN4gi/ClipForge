@@ -34,12 +34,21 @@ export const metadata: Metadata = {
     type: "website",
     siteName: "ClipForge",
     locale: "ja_JP",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "ClipForge - 商品写真からショート動画を自動生成",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "ClipForge - 商品写真からショート動画を自動生成",
     description:
       "写真を選んで、テンプレートを選ぶだけ。AIがプロ品質のショート動画を自動生成します。",
+    images: ["/og-image.png"],
   },
   robots: {
     index: true,
