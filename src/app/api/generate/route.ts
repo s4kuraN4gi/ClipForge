@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createVideoGeneration } from "@/lib/seedance/client";
 import { TEMPLATES } from "@/lib/constants";
 import { checkVideoLimit, incrementVideoCount } from "@/lib/subscription";
+import { rateLimit, getClientIp, RATE_LIMITS } from "@/lib/rate-limit";
 import type { TemplateType } from "@/types";
 
 interface GenerateRequestBody {
@@ -16,6 +17,16 @@ interface GenerateRequestBody {
 
 export async function POST(request: NextRequest) {
   try {
+    // レート制限チェック
+    const ip = getClientIp(request);
+    const rl = rateLimit(`generate:${ip}`, RATE_LIMITS.generate);
+    if (!rl.success) {
+      return NextResponse.json(
+        { error: "リクエストが多すぎます。しばらく待ってからお試しください。" },
+        { status: 429, headers: { "Retry-After": String(Math.ceil((rl.resetAt - Date.now()) / 1000)) } }
+      );
+    }
+
     const body: GenerateRequestBody = await request.json();
 
     // バリデーション

@@ -1,9 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { ACCEPTED_IMAGE_TYPES, MAX_IMAGE_SIZE_MB } from "@/lib/constants";
+import { rateLimit, getClientIp, RATE_LIMITS } from "@/lib/rate-limit";
+
+const ALLOWED_EXTENSIONS = ["jpg", "jpeg", "png"];
 
 export async function POST(request: NextRequest) {
   try {
+    // レート制限チェック
+    const ip = getClientIp(request);
+    const rl = rateLimit(`upload:${ip}`, RATE_LIMITS.upload);
+    if (!rl.success) {
+      return NextResponse.json(
+        { error: "アップロードが多すぎます。しばらく待ってからお試しください。" },
+        { status: 429, headers: { "Retry-After": String(Math.ceil((rl.resetAt - Date.now()) / 1000)) } }
+      );
+    }
+
     // 認証チェック
     const supabase = await createClient();
     const {
@@ -39,10 +52,19 @@ export async function POST(request: NextRequest) {
     const storagePaths: string[] = [];
 
     for (const file of files) {
-      // ファイルタイプ検証
+      // ファイルタイプ検証（Content-Type）
       if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
         return NextResponse.json(
           { error: `対応していないファイル形式です: ${file.name}` },
+          { status: 400 }
+        );
+      }
+
+      // ファイル拡張子検証
+      const ext = (file.name.split(".").pop() || "").toLowerCase();
+      if (!ALLOWED_EXTENSIONS.includes(ext)) {
+        return NextResponse.json(
+          { error: `対応していないファイル拡張子です: ${file.name}` },
           { status: 400 }
         );
       }
@@ -54,8 +76,6 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
-
-      const ext = file.name.split(".").pop() || "jpg";
       const storagePath = `${user.id}/${crypto.randomUUID()}.${ext}`;
 
       const arrayBuffer = await file.arrayBuffer();
@@ -74,11 +94,11 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // 署名付きURL生成（1時間有効）
+      // 署名付きURL生成（24時間有効 — 生成処理の待機時間を考慮）
       const { data: signedUrlData, error: signedUrlError } =
         await serviceClient.storage
           .from("product-images")
-          .createSignedUrl(storagePath, 3600);
+          .createSignedUrl(storagePath, 86400);
 
       if (signedUrlError || !signedUrlData) {
         console.error("Signed URL error:", signedUrlError);

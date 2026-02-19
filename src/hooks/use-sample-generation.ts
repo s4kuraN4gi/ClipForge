@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import {
   SAMPLE_VIDEOS,
   SAMPLE_GENERATION_DURATION_MS,
@@ -61,6 +61,11 @@ export function useSampleGeneration() {
     },
     [stopTimer]
   );
+
+  // アンマウント時にタイマーを確実に停止
+  useEffect(() => {
+    return () => stopTimer();
+  }, [stopTimer]);
 
   const reset = useCallback(() => {
     stopTimer();

@@ -17,15 +17,23 @@ export async function GET(
       );
     }
 
-    const status = await getTaskStatus(taskId);
-
-    // DB の generated_videos を更新
+    // 認証チェック
     const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
-    if (user) {
+    if (!user) {
+      return NextResponse.json(
+        { error: "認証が必要です" },
+        { status: 401 }
+      );
+    }
+
+    const status = await getTaskStatus(taskId);
+
+    // DB の generated_videos を更新
+    {
       const updateData: Record<string, unknown> = {
         status: status.status === "completed" ? "completed"
           : status.status === "failed" ? "failed"

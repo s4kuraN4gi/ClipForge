@@ -83,37 +83,23 @@ export default function CreatePage() {
         const uploadData = await uploadRes.json();
 
         if (!uploadRes.ok) {
-          console.warn("Upload failed, falling back to data URLs:", uploadData.error);
-          addToast({ type: "warning", title: "アップロード失敗", description: "ローカルプレビューモードで続行します" });
-          imageUrls = await Promise.all(
-            files.map(
-              (file) =>
-                new Promise<string>((resolve) => {
-                  const reader = new FileReader();
-                  reader.onloadend = () => resolve(reader.result as string);
-                  reader.readAsDataURL(file);
-                })
-            )
-          );
-          storagePaths = [];
-        } else {
-          imageUrls = uploadData.urls;
-          storagePaths = uploadData.storagePaths;
+          addToast({
+            type: "error",
+            title: "アップロード失敗",
+            description: uploadData.error || "画像のアップロードに失敗しました。再度お試しください。",
+          });
+          return;
         }
+
+        imageUrls = uploadData.urls;
+        storagePaths = uploadData.storagePaths;
       } catch {
-        console.warn("Upload network error, falling back to data URLs");
-        addToast({ type: "warning", title: "ネットワークエラー", description: "ローカルプレビューモードで続行します" });
-        imageUrls = await Promise.all(
-          files.map(
-            (file) =>
-              new Promise<string>((resolve) => {
-                const reader = new FileReader();
-                reader.onloadend = () => resolve(reader.result as string);
-                reader.readAsDataURL(file);
-              })
-          )
-        );
-        storagePaths = [];
+        addToast({
+          type: "error",
+          title: "ネットワークエラー",
+          description: "サーバーに接続できませんでした。通信環境を確認して再度お試しください。",
+        });
+        return;
       }
 
       await realGen.generate({

@@ -1,8 +1,19 @@
+import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-export default function CheckoutSuccessPage() {
+interface Props {
+  searchParams: Promise<{ session_id?: string }>;
+}
+
+export default async function CheckoutSuccessPage({ searchParams }: Props) {
+  const { session_id } = await searchParams;
+
+  if (!session_id) {
+    redirect("/pricing");
+  }
+
   return (
     <div className="px-4 py-12 sm:py-20">
       <div className="mx-auto max-w-md text-center">

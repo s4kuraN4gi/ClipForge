@@ -2,9 +2,30 @@ import Link from "next/link";
 import { PRICING_PLANS } from "@/lib/constants";
 import { CheckoutButton } from "@/components/pricing/checkout-button";
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "ClipForge",
+  applicationCategory: "MultimediaApplication",
+  operatingSystem: "Web",
+  description:
+    "商品写真をアップロードするだけで、TikTok・Reels・Shorts向けのプロ品質なショート動画を自動生成。",
+  offers: {
+    "@type": "AggregateOffer",
+    lowPrice: "0",
+    highPrice: "4980",
+    priceCurrency: "JPY",
+    offerCount: "3",
+  },
+};
+
 export default function Home() {
   return (
     <div>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* ヒーローセクション */}
       <section className="relative overflow-hidden px-4 pb-20 pt-24 text-center sm:pb-32 sm:pt-40">
         {/* 装飾ブロブ */}

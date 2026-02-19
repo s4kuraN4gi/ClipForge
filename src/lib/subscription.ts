@@ -44,39 +44,22 @@ export async function checkVideoLimit(userId: string): Promise<{
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
 
-    const { count } = await supabase
-      .from("generated_videos")
-      .select("id", { count: "exact", head: true })
-      .gte("created_at", monthStart)
-      .in("status", ["pending", "processing", "completed"])
-      .eq(
-        "project_id",
-        supabase
-          .from("projects")
-          .select("id")
-          .eq("user_id", userId) as unknown as string
-      );
+    // ユーザーのプロジェクト経由で当月の動画数をカウント
+    const { data: projects } = await supabase
+      .from("projects")
+      .select("id")
+      .eq("user_id", userId);
 
-    // フォールバック: projects 経由で直接カウント
-    if (count === null) {
-      const { data: projects } = await supabase
-        .from("projects")
-        .select("id")
-        .eq("user_id", userId);
+    if (projects && projects.length > 0) {
+      const projectIds = projects.map((p) => p.id);
+      const { count: videoCount } = await supabase
+        .from("generated_videos")
+        .select("id", { count: "exact", head: true })
+        .in("project_id", projectIds)
+        .gte("created_at", monthStart)
+        .in("status", ["pending", "processing", "completed"]);
 
-      if (projects && projects.length > 0) {
-        const projectIds = projects.map((p) => p.id);
-        const { count: videoCount } = await supabase
-          .from("generated_videos")
-          .select("id", { count: "exact", head: true })
-          .in("project_id", projectIds)
-          .gte("created_at", monthStart)
-          .in("status", ["pending", "processing", "completed"]);
-
-        currentCount = videoCount ?? 0;
-      }
-    } else {
-      currentCount = count;
+      currentCount = videoCount ?? 0;
     }
   }
 

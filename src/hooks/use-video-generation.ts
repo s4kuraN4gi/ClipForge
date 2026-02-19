@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { POLL_INTERVAL_MS, MAX_POLL_ATTEMPTS } from "@/lib/constants";
 
 type Status = "idle" | "uploading" | "generating" | "completed" | "failed";
@@ -227,6 +227,11 @@ export function useVideoGeneration() {
     },
     [pollStatus]
   );
+
+  // アンマウント時にポーリングを確実に停止
+  useEffect(() => {
+    return () => stopPolling();
+  }, [stopPolling]);
 
   const reset = useCallback(() => {
     stopPolling();

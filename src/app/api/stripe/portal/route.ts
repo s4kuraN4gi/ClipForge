@@ -23,7 +23,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const origin = request.headers.get("origin") || "";
+    // origin ホワイトリスト検証
+    const siteUrl =
+      process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+    const allowedOrigins = [
+      new URL(siteUrl).origin,
+      "http://localhost:3000",
+    ];
+    const rawOrigin = request.headers.get("origin") || "";
+    const origin = allowedOrigins.includes(rawOrigin)
+      ? rawOrigin
+      : allowedOrigins[0];
 
     const session = await getStripe().billingPortal.sessions.create({
       customer: subscription.stripe_customer_id,

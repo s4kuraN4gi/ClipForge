@@ -1,6 +1,18 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { PRICING_PLANS } from "@/lib/constants";
 import { CheckoutButton } from "@/components/pricing/checkout-button";
+
+export const metadata: Metadata = {
+  title: "料金プラン",
+  description:
+    "ClipForgeの料金プラン。無料プランから始めて、Basic・Proプランにアップグレードできます。",
+  openGraph: {
+    title: "料金プラン | ClipForge",
+    description:
+      "ClipForgeの料金プラン。無料プランから始めて、Basic・Proプランにアップグレードできます。",
+  },
+};
 
 export default function PricingPage() {
   return (

@@ -4,6 +4,25 @@ import { getStripe } from "@/lib/stripe/client";
 import { createServiceClient } from "@/lib/supabase/server";
 import { getPlanFromPriceId } from "@/lib/stripe/config";
 
+// べき等性チェック用: 処理済みイベント ID を一定時間保持
+const processedEvents = new Map<string, number>();
+const IDEMPOTENCY_TTL_MS = 5 * 60 * 1000; // 5分
+
+function isProcessed(eventId: string): boolean {
+  const now = Date.now();
+  // 古いエントリをクリーンアップ
+  for (const [id, timestamp] of processedEvents) {
+    if (now - timestamp > IDEMPOTENCY_TTL_MS) {
+      processedEvents.delete(id);
+    }
+  }
+  if (processedEvents.has(eventId)) {
+    return true;
+  }
+  processedEvents.set(eventId, now);
+  return false;
+}
+
 export async function POST(request: NextRequest) {
   const body = await request.text();
   const signature = request.headers.get("stripe-signature");
@@ -28,6 +47,11 @@ export async function POST(request: NextRequest) {
       { error: "署名の検証に失敗しました" },
       { status: 400 }
     );
+  }
+
+  // べき等性チェック: 同一イベントの再送をスキップ
+  if (isProcessed(event.id)) {
+    return NextResponse.json({ received: true, skipped: true });
   }
 
   const supabase = createServiceClient();

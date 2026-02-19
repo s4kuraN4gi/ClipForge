@@ -18,14 +18,32 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ClipForge - 商品写真からショート動画を自動生成",
+  title: {
+    default: "ClipForge - 商品写真からショート動画を自動生成",
+    template: "%s | ClipForge",
+  },
   description:
     "商品写真をアップロードするだけで、TikTok・Reels・Shorts向けのプロ品質なショート動画を自動生成。個人セラー・ハンドメイド作家のための動画マーケティングツール。",
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || "https://clipforge.app"
+  ),
   openGraph: {
     title: "ClipForge - 商品写真からショート動画を自動生成",
     description:
       "写真を選んで、テンプレートを選ぶだけ。AIがプロ品質のショート動画を自動生成します。",
     type: "website",
+    siteName: "ClipForge",
+    locale: "ja_JP",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ClipForge - 商品写真からショート動画を自動生成",
+    description:
+      "写真を選んで、テンプレートを選ぶだけ。AIがプロ品質のショート動画を自動生成します。",
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 };
 
