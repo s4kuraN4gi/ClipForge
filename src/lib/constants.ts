@@ -86,14 +86,14 @@ export const MAX_POLL_ATTEMPTS = 60;
 
 // サンプル体験用定数
 export const SAMPLE_IMAGE_POOL = [
-  { src: "/samples/images/showcase-1.svg", label: "レザーウォレット 正面" },
-  { src: "/samples/images/showcase-2.svg", label: "レザーウォレット 内側" },
-  { src: "/samples/images/showcase-3.svg", label: "レザーウォレット 詳細" },
-  { src: "/samples/images/before-after-1.svg", label: "スキンケア Before" },
-  { src: "/samples/images/before-after-2.svg", label: "スキンケア After" },
-  { src: "/samples/images/rotation-1.svg", label: "マグカップ 正面" },
-  { src: "/samples/images/rotation-2.svg", label: "マグカップ 横" },
-  { src: "/samples/images/rotation-3.svg", label: "マグカップ 背面" },
+  { src: "/samples/images/showcase-1.png", label: "レザーウォレット 正面" },
+  { src: "/samples/images/showcase-2.png", label: "レザーウォレット 内側" },
+  { src: "/samples/images/showcase-3.png", label: "レザーウォレット ディテール" },
+  { src: "/samples/images/before-after-1.png", label: "キャンドル素材 Before" },
+  { src: "/samples/images/before-after-2.png", label: "ボタニカルキャンドル After" },
+  { src: "/samples/images/rotation-1.png", label: "陶器マグカップ 正面" },
+  { src: "/samples/images/rotation-2.png", label: "陶器マグカップ 斜め" },
+  { src: "/samples/images/rotation-3.png", label: "陶器マグカップ 背面" },
 ];
 
 export const SAMPLE_VIDEOS: Record<TemplateType, string> = {
