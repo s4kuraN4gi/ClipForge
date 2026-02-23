@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
   try {
     // レート制限チェック
     const ip = getClientIp(request);
-    const rl = rateLimit(`checkout:${ip}`, RATE_LIMITS.checkout);
+    const rl = await rateLimit(`checkout:${ip}`, RATE_LIMITS.checkout);
     if (!rl.success) {
       return NextResponse.json(
         { error: "リクエストが多すぎます。しばらく待ってからお試しください。" },
@@ -39,6 +39,20 @@ export async function POST(request: NextRequest) {
 
     // 既存の Stripe Customer ID を取得
     const subscription = await getSubscription(user.id);
+
+    // 二重課金防止: 既にアクティブな有料サブスクリプションがある場合はブロック
+    if (
+      subscription?.stripe_subscription_id &&
+      subscription.status === "active" &&
+      subscription.plan !== "free"
+    ) {
+      return NextResponse.json(
+        {
+          error: "既にアクティブなサブスクリプションがあります。プラン変更はマイページから行ってください。",
+        },
+        { status: 409 }
+      );
+    }
     const customerOptions: { customer?: string; customer_email?: string } = {};
 
     if (subscription?.stripe_customer_id) {

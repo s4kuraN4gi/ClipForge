@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
   try {
     // レート制限チェック
     const ip = getClientIp(request);
-    const rl = rateLimit(`upload:${ip}`, RATE_LIMITS.upload);
+    const rl = await rateLimit(`upload:${ip}`, RATE_LIMITS.upload);
     if (!rl.success) {
       return NextResponse.json(
         { error: "アップロードが多すぎます。しばらく待ってからお試しください。" },
@@ -76,6 +76,25 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
+
+      // Magic bytes 検証（Content-Type 偽装対策）
+      const headerBytes = new Uint8Array(
+        await file.slice(0, 8).arrayBuffer()
+      );
+      const isJpeg =
+        headerBytes[0] === 0xff && headerBytes[1] === 0xd8 && headerBytes[2] === 0xff;
+      const isPng =
+        headerBytes[0] === 0x89 &&
+        headerBytes[1] === 0x50 &&
+        headerBytes[2] === 0x4e &&
+        headerBytes[3] === 0x47;
+      if (!isJpeg && !isPng) {
+        return NextResponse.json(
+          { error: `ファイルの内容が画像形式ではありません: ${file.name}` },
+          { status: 400 }
+        );
+      }
+
       const storagePath = `${user.id}/${crypto.randomUUID()}.${ext}`;
 
       const arrayBuffer = await file.arrayBuffer();
@@ -94,11 +113,11 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // 署名付きURL生成（24時間有効 — 生成処理の待機時間を考慮）
+      // 署名付きURL生成（1時間有効）
       const { data: signedUrlData, error: signedUrlError } =
         await serviceClient.storage
           .from("product-images")
-          .createSignedUrl(storagePath, 86400);
+          .createSignedUrl(storagePath, 3600);
 
       if (signedUrlError || !signedUrlData) {
         console.error("Signed URL error:", signedUrlError);

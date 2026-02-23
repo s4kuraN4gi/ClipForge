@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
   try {
     // レート制限チェック
     const ip = getClientIp(request);
-    const rl = rateLimit(`generate:${ip}`, RATE_LIMITS.generate);
+    const rl = await rateLimit(`generate:${ip}`, RATE_LIMITS.generate);
     if (!rl.success) {
       return NextResponse.json(
         { error: "リクエストが多すぎます。しばらく待ってからお試しください。" },

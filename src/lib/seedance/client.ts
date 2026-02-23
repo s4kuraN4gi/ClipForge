@@ -17,8 +17,21 @@ function getApiKey(): string {
 }
 
 function useMock(): boolean {
-  // 明示的にモック指定、または API キー未設定時は自動でモックを使用
-  return process.env.SEEDANCE_USE_MOCK === "true" || !process.env.BYTEPLUS_API_KEY;
+  // 明示的にモック指定時のみモックを使用（開発用）
+  if (process.env.SEEDANCE_USE_MOCK === "true") {
+    return true;
+  }
+  // 本番環境で API キー未設定は設定ミス → エラーにする
+  if (!process.env.BYTEPLUS_API_KEY) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error(
+        "BYTEPLUS_API_KEY が未設定です。本番環境では API キーの設定が必須です。"
+      );
+    }
+    // 開発環境では API キー未設定時に自動でモック
+    return true;
+  }
+  return false;
 }
 
 export async function createVideoGeneration(params: {
