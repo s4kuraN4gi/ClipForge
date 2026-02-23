@@ -177,7 +177,7 @@ export default function CreatePage() {
                 商品写真をアップロード
               </h2>
               <p className="mb-4 text-sm text-muted-foreground">
-                1〜5枚の商品写真を選択してください。スマホで撮影した写真でOKです。
+                商品写真を1枚選択してください。スマホで撮影した写真でOKです。
               </p>
               <FileUpload
                 onFilesSelected={setFiles}

@@ -37,9 +37,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (body.imageUrls.length > 5) {
+    if (body.imageUrls.length > 1) {
       return NextResponse.json(
-        { error: "画像は5枚までアップロードできます" },
+        { error: "画像は1枚のみアップロードできます" },
         { status: 400 }
       );
     }

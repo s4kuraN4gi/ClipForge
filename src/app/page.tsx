@@ -19,6 +19,58 @@ const jsonLd = {
   },
 };
 
+const DEMO_TEMPLATES = [
+  {
+    name: "商品紹介",
+    description: "写真を順番に見せる標準的な商品紹介動画",
+    poster: "/samples/images/showcase-1.png",
+    video: "/samples/videos/showcase.mp4",
+  },
+  {
+    name: "Before / After",
+    description: "使用前→使用後の変化を印象的に見せる",
+    poster: "/samples/images/before-after-1.png",
+    video: "/samples/videos/before-after.mp4",
+  },
+  {
+    name: "360° 回転風",
+    description: "複数アングルを回転するように見せる",
+    poster: "/samples/images/rotation-1.png",
+    video: "/samples/videos/rotation.mp4",
+  },
+];
+
+const FAQ_ITEMS = [
+  {
+    q: "どんな写真を使えますか？",
+    a: "JPEG または PNG 形式の商品写真を1枚アップロードできます。スマホで撮影した写真でもOKです。明るく、商品がはっきり写っている写真がおすすめです。",
+  },
+  {
+    q: "動画の生成にどれくらいかかりますか？",
+    a: "通常2〜5分程度で完成します。AIが写真を分析し、選択したテンプレートに基づいて動画を自動生成します。",
+  },
+  {
+    q: "無料プランでは何ができますか？",
+    a: "無料アカウントを作成すると、累計3本まで動画を生成できます（透かし付き）。3種類のテンプレートすべてを試せます。",
+  },
+  {
+    q: "有料プランとの違いは？",
+    a: "有料プランでは透かしなしの動画を月15本（スターター）または月50本（ビジネス）まで生成できます。ビジネスプランでは独自ブランディング機能も利用可能です。",
+  },
+  {
+    q: "生成した動画はどこで使えますか？",
+    a: "TikTok、Instagram Reels、YouTube Shorts など主要なショート動画プラットフォームに対応した9:16の縦型フォーマットで出力されます。そのまま投稿可能です。",
+  },
+  {
+    q: "プランはいつでも解約できますか？",
+    a: "はい。有料プランはいつでも解約可能で、現在の請求期間の終わりまで利用できます。解約後は自動的に無料プランに戻ります。",
+  },
+  {
+    q: "動画生成にはどんな技術を使っていますか？",
+    a: "ByteDance の最新 AI 動画生成モデル「Seedance 2.0」を採用しています。静止画から自然な動きのある動画を生成する最先端の技術です。",
+  },
+];
+
 export default function Home() {
   return (
     <div>
@@ -26,9 +78,9 @@ export default function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+
       {/* ヒーローセクション */}
       <section className="relative overflow-hidden px-4 pb-20 pt-24 text-center sm:pb-32 sm:pt-40">
-        {/* 装飾ブロブ */}
         <div className="blob-1 -left-48 -top-24" />
         <div className="blob-2 -right-32 top-20" />
         <div className="blob-3 left-1/4 bottom-0" />
@@ -62,7 +114,7 @@ export default function Home() {
               <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                 <path d="M3.75 3A1.75 1.75 0 002 4.75v10.5c0 .966.784 1.75 1.75 1.75h12.5A1.75 1.75 0 0018 15.25v-8.5A1.75 1.75 0 0016.25 5h-4.836a.25.25 0 01-.177-.073L9.823 3.513A1.75 1.75 0 008.586 3H3.75z" />
               </svg>
-              無料で動画を作成
+              無料で3本試してみる
             </Link>
             <a
               href="#pricing"
@@ -71,6 +123,60 @@ export default function Home() {
             >
               料金プランを見る
             </a>
+          </div>
+        </div>
+      </section>
+
+      {/* デモプレビュー */}
+      <section className="relative border-t border-border px-4 py-20 sm:py-28">
+        <div className="mx-auto max-w-4xl">
+          <div className="mb-4 text-center text-sm font-medium text-primary">
+            DEMO
+          </div>
+          <h2 className="mb-4 text-center text-2xl font-bold sm:text-3xl">
+            3種類のテンプレートで動画を生成
+          </h2>
+          <p className="mb-14 text-center text-muted-foreground">
+            写真1枚から、用途に合ったスタイルの動画を自動作成します
+          </p>
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
+            {DEMO_TEMPLATES.map((tmpl) => (
+              <div key={tmpl.name} className="flex flex-col items-center">
+                <div
+                  className="relative mb-4 aspect-[9/16] w-full max-w-[200px] overflow-hidden rounded-2xl bg-black"
+                  style={{ boxShadow: "var(--shadow-lg)" }}
+                >
+                  <img
+                    src={tmpl.poster}
+                    alt={`${tmpl.name}のサンプル`}
+                    className="h-full w-full object-cover"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/90 pl-1">
+                      <svg className="h-5 w-5 text-primary" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+                <h3 className="mb-1 text-base font-bold">{tmpl.name}</h3>
+                <p className="text-center text-sm text-muted-foreground">
+                  {tmpl.description}
+                </p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-10 text-center">
+            <Link
+              href="/create"
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary transition-colors hover:text-primary-hover"
+            >
+              サンプルを体験する
+              <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fillRule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clipRule="evenodd" />
+              </svg>
+            </Link>
           </div>
         </div>
       </section>
@@ -97,7 +203,7 @@ export default function Home() {
                 ),
                 title: "写真を選択",
                 description:
-                  "商品写真を1〜5枚アップロード。スマホで撮った写真でOK。",
+                  "商品写真を1枚アップロード。スマホで撮った写真でOK。",
               },
               {
                 step: "2",
@@ -127,7 +233,7 @@ export default function Home() {
                 ),
                 title: "AIが動画を生成",
                 description:
-                  "30秒で完成。商品名やキャッチコピーも自動で入ります。",
+                  "数分で完成。商品名やキャッチコピーも自動で入ります。",
               },
             ].map((item) => (
               <div
@@ -182,10 +288,34 @@ export default function Home() {
         </div>
       </section>
 
+      {/* 技術・信頼性 */}
+      <section className="border-t border-border bg-muted/50 px-4 py-14">
+        <div className="mx-auto max-w-3xl text-center">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-4 py-1.5 text-sm font-medium text-accent">
+            <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
+            Open Beta
+          </div>
+          <p className="mb-6 text-sm text-muted-foreground">
+            最新の AI 技術と信頼性の高いインフラで構築
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm font-medium text-muted-foreground">
+            <span>Seedance 2.0 (ByteDance)</span>
+            <span className="hidden text-border sm:inline" aria-hidden="true">|</span>
+            <span>Supabase</span>
+            <span className="hidden text-border sm:inline" aria-hidden="true">|</span>
+            <span>Stripe</span>
+            <span className="hidden text-border sm:inline" aria-hidden="true">|</span>
+            <span>Vercel</span>
+          </div>
+        </div>
+      </section>
+
       {/* 料金プラン */}
       <section
         id="pricing"
-        className="relative border-t border-border bg-muted/50 px-4 py-20 sm:py-28"
+        className="relative px-4 py-20 sm:py-28"
       >
         <div className="blob-1 -left-60 top-40 opacity-20" />
         <div className="relative mx-auto max-w-4xl">
@@ -196,7 +326,7 @@ export default function Home() {
             料金プラン
           </h2>
           <p className="mb-14 text-center text-muted-foreground">
-            まずは無料プランからお試しください
+            無料で3本試せます。気に入ったらアップグレード。
           </p>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
             {PRICING_PLANS.map((plan) => (
@@ -240,10 +370,10 @@ export default function Home() {
                 </ul>
                 {plan.price === 0 ? (
                   <Link
-                    href="/create"
+                    href="/login"
                     className="flex h-11 items-center justify-center rounded-full border border-border text-sm font-semibold transition-all duration-200 hover:bg-muted hover:-translate-y-0.5"
                   >
-                    無料で始める
+                    無料で3本試す
                   </Link>
                 ) : (
                   <CheckoutButton
@@ -260,6 +390,42 @@ export default function Home() {
         </div>
       </section>
 
+      {/* FAQ */}
+      <section className="border-t border-border bg-muted/50 px-4 py-20 sm:py-28">
+        <div className="mx-auto max-w-2xl">
+          <div className="mb-4 text-center text-sm font-medium text-primary">
+            FAQ
+          </div>
+          <h2 className="mb-14 text-center text-2xl font-bold sm:text-3xl">
+            よくある質問
+          </h2>
+          <div className="space-y-3">
+            {FAQ_ITEMS.map((item) => (
+              <details
+                key={item.q}
+                className="group rounded-2xl border border-border bg-background transition-all duration-200"
+                style={{ boxShadow: "var(--shadow-sm)" }}
+              >
+                <summary className="flex cursor-pointer items-center justify-between px-6 py-5 text-sm font-semibold [&::-webkit-details-marker]:hidden">
+                  {item.q}
+                  <svg
+                    className="h-5 w-5 shrink-0 text-muted-foreground transition-transform duration-200 group-open:rotate-180"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+                  </svg>
+                </summary>
+                <div className="px-6 pb-5 text-sm leading-relaxed text-muted-foreground">
+                  {item.a}
+                </div>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="relative overflow-hidden px-4 py-20 text-center sm:py-28">
         <div className="blob-2 left-1/3 -top-20 opacity-30" />
@@ -270,17 +436,17 @@ export default function Home() {
             今すぐ動画を作成しませんか？
           </h2>
           <p className="mb-10 text-lg text-muted-foreground">
-            アカウント登録なしですぐに試せます。
+            無料アカウントを作成して、3本まで動画を試せます。
           </p>
           <Link
-            href="/create"
+            href="/login"
             className="inline-flex h-13 items-center justify-center gap-2 rounded-full bg-primary px-10 text-base font-semibold text-white transition-all duration-200 hover:bg-primary-hover hover:-translate-y-0.5"
             style={{ boxShadow: "var(--shadow-glow)" }}
           >
             <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
               <path d="M3.75 3A1.75 1.75 0 002 4.75v10.5c0 .966.784 1.75 1.75 1.75h12.5A1.75 1.75 0 0018 15.25v-8.5A1.75 1.75 0 0016.25 5h-4.836a.25.25 0 01-.177-.073L9.823 3.513A1.75 1.75 0 008.586 3H3.75z" />
             </svg>
-            無料で動画を作成
+            無料で3本試してみる
           </Link>
         </div>
       </section>

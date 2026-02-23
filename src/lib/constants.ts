@@ -34,45 +34,46 @@ export const PRICING_PLANS: PricingPlan[] = [
     price: 0,
     priceLabel: "¥0",
     features: [
-      "サンプル動画で体験",
+      "累計3本まで生成",
+      "透かし付き",
       "3種類のテンプレート",
-      "アカウント登録不要",
+      "アカウント登録で利用可能",
     ],
-    videoLimit: 0,
+    videoLimit: 3,
   },
   {
-    id: "basic",
-    name: "ベーシック",
-    price: 980,
-    priceLabel: "¥980/月",
+    id: "starter",
+    name: "スターター",
+    price: 1980,
+    priceLabel: "¥1,980/月",
     features: [
-      "月30本まで生成",
+      "月15本まで生成",
       "透かしなし",
       "1080p画質",
       "3種類のテンプレート",
       "BGM自動選択",
     ],
-    videoLimit: 30,
+    videoLimit: 15,
     highlighted: true,
   },
   {
-    id: "pro",
-    name: "プロ",
-    price: 1980,
-    priceLabel: "¥1,980/月",
+    id: "business",
+    name: "ビジネス",
+    price: 4980,
+    priceLabel: "¥4,980/月",
     features: [
-      "無制限生成",
+      "月50本まで生成",
       "透かしなし",
-      "4K対応",
+      "1080p画質",
       "全テンプレート",
       "BGM自動選択",
       "独自ブランディング",
     ],
-    videoLimit: null,
+    videoLimit: 50,
   },
 ];
 
-export const MAX_IMAGES = 5;
+export const MAX_IMAGES = 1;
 export const MIN_IMAGES = 1;
 export const MAX_IMAGE_SIZE_MB = 10;
 export const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png"];

@@ -56,10 +56,11 @@ export function FileUpload({
       const files = Array.from(fileList);
       const validFiles = validateFiles(files);
       if (validFiles.length > 0) {
-        onFilesSelected([...selectedFiles, ...validFiles]);
+        // 1枚制限: 既存ファイルを置換
+        onFilesSelected(validFiles.slice(0, maxFiles));
       }
     },
-    [validateFiles, onFilesSelected, selectedFiles]
+    [validateFiles, onFilesSelected, maxFiles]
   );
 
   const handleDrop = useCallback(
@@ -114,21 +115,20 @@ export function FileUpload({
         onKeyDown={handleKeyDown}
       >
         <div className="mb-3 text-4xl" aria-hidden="true">
-          {selectedFiles.length > 0 ? "+" : "📷"}
+          {selectedFiles.length > 0 ? "✓" : "📷"}
         </div>
         <p className="text-sm font-medium">
           {selectedFiles.length > 0
-            ? "さらに画像を追加"
+            ? "画像を変更する"
             : "商品写真をドラッグ&ドロップ"}
         </p>
         <p className="mt-1 text-xs text-muted-foreground">
-          またはクリックして選択（JPEG/PNG、最大{maxFiles}枚）
+          またはクリックして選択（JPEG/PNG、1枚）
         </p>
         <input
           ref={inputRef}
           type="file"
           accept={ACCEPTED_IMAGE_TYPES.join(",")}
-          multiple
           className="hidden"
           onChange={(e) => handleFiles(e.target.files)}
           aria-hidden="true"

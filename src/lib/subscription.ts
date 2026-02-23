@@ -38,13 +38,10 @@ export async function checkVideoLimit(userId: string): Promise<{
 
   let currentCount = subscription?.monthly_video_count ?? 0;
 
-  // 無料プランで period_end が null の場合、当月の generated_videos をカウント
-  if (plan === "free" && !subscription?.current_period_end) {
+  // 無料プラン: 累計（lifetime）制限 — 全期間の生成数をカウント
+  if (plan === "free") {
     const supabase = createServiceClient();
-    const now = new Date();
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
 
-    // ユーザーのプロジェクト経由で当月の動画数をカウント
     const { data: projects } = await supabase
       .from("projects")
       .select("id")
@@ -56,7 +53,6 @@ export async function checkVideoLimit(userId: string): Promise<{
         .from("generated_videos")
         .select("id", { count: "exact", head: true })
         .in("project_id", projectIds)
-        .gte("created_at", monthStart)
         .in("status", ["pending", "processing", "completed"]);
 
       currentCount = videoCount ?? 0;

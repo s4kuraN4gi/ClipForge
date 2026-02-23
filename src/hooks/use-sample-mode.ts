@@ -27,27 +27,29 @@ export function useSampleMode(): SampleModeState {
         data: { user },
       } = await supabase.auth.getUser();
 
+      // 未ログイン → サンプルモード
       if (!user) {
         setState({ isSampleMode: true, isLoading: false, user: null, plan: null });
         return;
       }
 
+      // ログイン済み → 全プランで実生成（無料プランは累計3本、有料は月次制限）
       try {
         const res = await fetch("/api/subscription");
         if (res.ok) {
           const data = await res.json();
           const plan: PlanType = data.subscription?.plan ?? "free";
           setState({
-            isSampleMode: plan === "free",
+            isSampleMode: false,
             isLoading: false,
             user,
             plan,
           });
         } else {
-          setState({ isSampleMode: true, isLoading: false, user, plan: "free" });
+          setState({ isSampleMode: false, isLoading: false, user, plan: "free" });
         }
       } catch {
-        setState({ isSampleMode: true, isLoading: false, user, plan: "free" });
+        setState({ isSampleMode: false, isLoading: false, user, plan: "free" });
       }
     }
     checkMode();

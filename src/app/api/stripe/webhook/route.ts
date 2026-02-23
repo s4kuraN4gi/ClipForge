@@ -4,25 +4,6 @@ import { getStripe } from "@/lib/stripe/client";
 import { createServiceClient } from "@/lib/supabase/server";
 import { getPlanFromPriceId } from "@/lib/stripe/config";
 
-// べき等性チェック用: 処理済みイベント ID を一定時間保持
-const processedEvents = new Map<string, number>();
-const IDEMPOTENCY_TTL_MS = 5 * 60 * 1000; // 5分
-
-function isProcessed(eventId: string): boolean {
-  const now = Date.now();
-  // 古いエントリをクリーンアップ
-  for (const [id, timestamp] of processedEvents) {
-    if (now - timestamp > IDEMPOTENCY_TTL_MS) {
-      processedEvents.delete(id);
-    }
-  }
-  if (processedEvents.has(eventId)) {
-    return true;
-  }
-  processedEvents.set(eventId, now);
-  return false;
-}
-
 export async function POST(request: NextRequest) {
   const body = await request.text();
   const signature = request.headers.get("stripe-signature");
@@ -49,10 +30,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // べき等性チェック: 同一イベントの再送をスキップ
-  if (isProcessed(event.id)) {
-    return NextResponse.json({ received: true, skipped: true });
-  }
+  // べき等性は DB の upsert / update に依拠（Vercel serverless では in-memory Map は共有されない）
 
   const supabase = createServiceClient();
 
@@ -91,20 +69,30 @@ export async function POST(request: NextRequest) {
           }
         }
 
-        await supabase.from("subscriptions").upsert(
-          {
-            user_id: userId,
-            plan,
-            stripe_customer_id: customerId,
-            stripe_subscription_id: subscriptionId,
-            status: "active",
-            current_period_start: periodStart,
-            current_period_end: periodEnd,
-            monthly_video_count: 0,
-            cancel_at_period_end: false,
-          },
-          { onConflict: "user_id" }
-        );
+        const { error: upsertError } = await supabase
+          .from("subscriptions")
+          .upsert(
+            {
+              user_id: userId,
+              plan,
+              stripe_customer_id: customerId,
+              stripe_subscription_id: subscriptionId,
+              status: "active",
+              current_period_start: periodStart,
+              current_period_end: periodEnd,
+              monthly_video_count: 0,
+              cancel_at_period_end: false,
+            },
+            { onConflict: "user_id" }
+          );
+
+        if (upsertError) {
+          console.error("Webhook DB error (checkout.session.completed):", upsertError);
+          return NextResponse.json(
+            { error: "サブスクリプションの保存に失敗しました" },
+            { status: 500 }
+          );
+        }
         break;
       }
 
@@ -114,7 +102,7 @@ export async function POST(request: NextRequest) {
         const plan = priceId ? getPlanFromPriceId(priceId) : "free";
 
         const item = sub.items.data[0];
-        await supabase
+        const { error: updateError } = await supabase
           .from("subscriptions")
           .update({
             plan,
@@ -128,13 +116,21 @@ export async function POST(request: NextRequest) {
             cancel_at_period_end: sub.cancel_at_period_end,
           })
           .eq("stripe_subscription_id", sub.id);
+
+        if (updateError) {
+          console.error("Webhook DB error (subscription.updated):", updateError);
+          return NextResponse.json(
+            { error: "サブスクリプションの更新に失敗しました" },
+            { status: 500 }
+          );
+        }
         break;
       }
 
       case "customer.subscription.deleted": {
         const sub = event.data.object as Stripe.Subscription;
 
-        await supabase
+        const { error: deleteError } = await supabase
           .from("subscriptions")
           .update({
             plan: "free",
@@ -145,6 +141,14 @@ export async function POST(request: NextRequest) {
             current_period_end: null,
           })
           .eq("stripe_subscription_id", sub.id);
+
+        if (deleteError) {
+          console.error("Webhook DB error (subscription.deleted):", deleteError);
+          return NextResponse.json(
+            { error: "サブスクリプションの削除処理に失敗しました" },
+            { status: 500 }
+          );
+        }
         break;
       }
 
@@ -160,10 +164,18 @@ export async function POST(request: NextRequest) {
           subscriptionId
         ) {
           // 月次リセット
-          await supabase
+          const { error: resetError } = await supabase
             .from("subscriptions")
             .update({ monthly_video_count: 0 })
             .eq("stripe_subscription_id", subscriptionId);
+
+          if (resetError) {
+            console.error("Webhook DB error (payment_succeeded):", resetError);
+            return NextResponse.json(
+              { error: "月次カウントのリセットに失敗しました" },
+              { status: 500 }
+            );
+          }
         }
         break;
       }
@@ -176,10 +188,18 @@ export async function POST(request: NextRequest) {
           typeof subId === "string" ? subId : subId?.id;
 
         if (subscriptionId) {
-          await supabase
+          const { error: failError } = await supabase
             .from("subscriptions")
             .update({ status: "past_due" })
             .eq("stripe_subscription_id", subscriptionId);
+
+          if (failError) {
+            console.error("Webhook DB error (payment_failed):", failError);
+            return NextResponse.json(
+              { error: "支払い失敗ステータスの更新に失敗しました" },
+              { status: 500 }
+            );
+          }
         }
         break;
       }

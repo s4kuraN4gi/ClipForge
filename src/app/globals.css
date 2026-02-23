@@ -151,3 +151,15 @@ body {
   opacity: 0.5;
   animation: float 18s ease-in-out infinite 2s;
 }
+
+/* FAQ accordion smooth open */
+details > summary {
+  list-style: none;
+}
+details[open] > div {
+  animation: faq-open 0.2s ease-out;
+}
+@keyframes faq-open {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}

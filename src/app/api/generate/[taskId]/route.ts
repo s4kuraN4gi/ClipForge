@@ -30,6 +30,28 @@ export async function GET(
       );
     }
 
+    // 所有権チェック: このユーザーが作成した動画タスクか確認（IDOR 対策）
+    const { data: ownerCheck } = await supabase
+      .from("generated_videos")
+      .select("id, project_id, projects!inner(user_id)")
+      .eq("task_id", taskId)
+      .single();
+
+    if (!ownerCheck) {
+      return NextResponse.json(
+        { error: "該当するタスクが見つかりません" },
+        { status: 404 }
+      );
+    }
+
+    const projectOwner = (ownerCheck.projects as unknown as { user_id: string }).user_id;
+    if (projectOwner !== user.id) {
+      return NextResponse.json(
+        { error: "このタスクへのアクセス権がありません" },
+        { status: 403 }
+      );
+    }
+
     const status = await getTaskStatus(taskId);
 
     // DB の generated_videos を更新

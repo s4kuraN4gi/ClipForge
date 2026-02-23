@@ -40,9 +40,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (files.length > 5) {
+    if (files.length > 1) {
       return NextResponse.json(
-        { error: "画像は5枚までアップロードできます" },
+        { error: "画像は1枚のみアップロードできます" },
         { status: 400 }
       );
     }

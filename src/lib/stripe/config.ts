@@ -6,11 +6,11 @@ const priceIdToPlan: Record<string, PlanType> = {};
 function ensureMapping() {
   if (Object.keys(priceIdToPlan).length > 0) return;
 
-  const basic = process.env.STRIPE_PRICE_BASIC;
-  const pro = process.env.STRIPE_PRICE_PRO;
+  const starter = process.env.STRIPE_PRICE_STARTER;
+  const business = process.env.STRIPE_PRICE_BUSINESS;
 
-  if (basic) priceIdToPlan[basic] = "basic";
-  if (pro) priceIdToPlan[pro] = "pro";
+  if (starter) priceIdToPlan[starter] = "starter";
+  if (business) priceIdToPlan[business] = "business";
 }
 
 /** Stripe Price ID からプラン名を逆引き */
@@ -22,10 +22,10 @@ export function getPlanFromPriceId(priceId: string): PlanType {
 /** プラン名から Stripe Price ID を取得 */
 export function getPriceIdFromPlan(plan: PlanType): string | null {
   switch (plan) {
-    case "basic":
-      return process.env.STRIPE_PRICE_BASIC || null;
-    case "pro":
-      return process.env.STRIPE_PRICE_PRO || null;
+    case "starter":
+      return process.env.STRIPE_PRICE_STARTER || null;
+    case "business":
+      return process.env.STRIPE_PRICE_BUSINESS || null;
     default:
       return null;
   }

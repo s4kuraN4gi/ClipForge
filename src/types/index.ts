@@ -4,7 +4,7 @@ export type ProjectStatus = "draft" | "generating" | "completed" | "failed";
 
 export type VideoStatus = "pending" | "processing" | "completed" | "failed";
 
-export type PlanType = "free" | "basic" | "pro";
+export type PlanType = "free" | "starter" | "business";
 
 export interface Project {
   id: string;
