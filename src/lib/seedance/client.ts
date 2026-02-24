@@ -1,12 +1,14 @@
 import type {
-  SeedanceGenerateRequest,
   SeedanceGenerateResponse,
   SeedanceTaskStatus,
 } from "./types";
 import { createMockGeneration, getMockTaskStatus } from "./mock";
 
 const BASE_URL = "https://ark.ap-southeast.bytepluses.com/api/v3";
-const MODEL_ID = "seedance-2.0";
+
+// Seedance 1.5 Pro（BytePlus で現在利用可能な最新モデル）
+// Seedance 2.0 が正式リリースされたらモデル ID を更新
+const MODEL_ID = process.env.SEEDANCE_MODEL_ID || "seedance-1-5-pro-251215";
 
 function getApiKey(): string {
   const key = process.env.BYTEPLUS_API_KEY;
@@ -46,23 +48,35 @@ export async function createVideoGeneration(params: {
     return createMockGeneration();
   }
 
-  const request: SeedanceGenerateRequest = {
+  // BytePlus ModelArk Video Generation API 形式
+  // content 配列で画像（first_frame）とテキスト（prompt）を指定
+  const requestBody = {
     model: MODEL_ID,
-    image_url: params.imageUrl,
-    prompt: params.prompt,
-    duration: params.duration ?? 8,
-    resolution: params.resolution ?? "1080p",
-    aspect_ratio: params.aspectRatio ?? "9:16",
-    watermark: params.watermark ?? false,
+    content: [
+      {
+        type: "image_url",
+        image_url: {
+          url: params.imageUrl,
+          detail: "first_frame",
+        },
+      },
+      {
+        type: "text",
+        text: params.prompt,
+      },
+    ],
+    ...(params.duration && { duration: params.duration }),
+    ...(params.resolution && { resolution: params.resolution }),
+    ...(params.aspectRatio && { aspect_ratio: params.aspectRatio }),
   };
 
-  const response = await fetch(`${BASE_URL}/video/generations`, {
+  const response = await fetch(`${BASE_URL}/contents/generations/tasks`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${getApiKey()}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(request),
+    body: JSON.stringify(requestBody),
   });
 
   if (!response.ok) {
@@ -72,7 +86,14 @@ export async function createVideoGeneration(params: {
     );
   }
 
-  return response.json();
+  const data = await response.json();
+
+  // ModelArk のレスポンスを統一形式に変換
+  return {
+    id: data.id || data.task_id,
+    status: data.status || "pending",
+    message: data.message,
+  };
 }
 
 export async function getTaskStatus(
@@ -83,7 +104,7 @@ export async function getTaskStatus(
   }
 
   const response = await fetch(
-    `${BASE_URL}/video/generations/${taskId}`,
+    `${BASE_URL}/contents/generations/tasks/${taskId}`,
     {
       headers: {
         Authorization: `Bearer ${getApiKey()}`,
@@ -98,5 +119,29 @@ export async function getTaskStatus(
     );
   }
 
-  return response.json();
+  const data = await response.json();
+
+  // ModelArk の実レスポンス形式に基づく変換
+  // API status: "running" → 生成中, "succeeded" → 完了, "failed" → 失敗
+  // content.video_url に動画 URL が格納される（content はオブジェクト）
+  const apiStatus = data.status || "pending";
+
+  // アプリ内部の統一ステータスに変換
+  const normalizedStatus =
+    apiStatus === "succeeded" ? "completed"
+    : apiStatus === "running" ? "processing"
+    : apiStatus;
+
+  return {
+    id: data.id || taskId,
+    status: normalizedStatus,
+    progress: normalizedStatus === "completed" ? 100 : 0,
+    data: data.content?.video_url
+      ? { video_url: data.content.video_url }
+      : undefined,
+    error: data.error?.message,
+    meta: data.usage
+      ? { usage: { total_tokens: data.usage.total_tokens ?? 0 } }
+      : undefined,
+  };
 }

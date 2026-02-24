@@ -57,7 +57,7 @@ export function getMockTaskStatus(taskId: string): SeedanceTaskStatus {
       },
       meta: {
         usage: {
-          credits_used: 0.1,
+          total_tokens: 108900,
         },
       },
     };

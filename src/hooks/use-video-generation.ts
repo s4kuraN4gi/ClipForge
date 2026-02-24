@@ -36,6 +36,7 @@ export function useVideoGeneration() {
   });
 
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const progressRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const attemptsRef = useRef(0);
 
   const stopPolling = useCallback(() => {
@@ -43,12 +44,35 @@ export function useVideoGeneration() {
       clearInterval(pollingRef.current);
       pollingRef.current = null;
     }
+    if (progressRef.current) {
+      clearInterval(progressRef.current);
+      progressRef.current = null;
+    }
     attemptsRef.current = 0;
+  }, []);
+
+  // 経過時間ベースの擬似プログレス（API がリアルタイム進捗を返さないため）
+  // 約90秒で90%まで進み、完了時に100%にジャンプ
+  const startProgressSimulation = useCallback(() => {
+    if (progressRef.current) {
+      clearInterval(progressRef.current);
+    }
+    const startTime = Date.now();
+    progressRef.current = setInterval(() => {
+      const elapsed = (Date.now() - startTime) / 1000;
+      // 90秒で約90%に到達する対数カーブ
+      const simulated = Math.min(90, Math.floor(90 * (1 - Math.exp(-elapsed / 40))));
+      setState((prev) => {
+        if (prev.status !== "generating" || prev.progress >= 100) return prev;
+        return { ...prev, progress: Math.max(prev.progress, simulated) };
+      });
+    }, 1000);
   }, []);
 
   const pollStatus = useCallback(
     (taskId: string) => {
       stopPolling();
+      startProgressSimulation();
 
       pollingRef.current = setInterval(async () => {
         attemptsRef.current++;
@@ -70,11 +94,6 @@ export function useVideoGeneration() {
           if (!response.ok) {
             throw new Error(data.error || "ステータス確認に失敗しました");
           }
-
-          setState((prev) => ({
-            ...prev,
-            progress: data.progress ?? prev.progress,
-          }));
 
           if (data.status === "completed" && data.videoUrl) {
             stopPolling();
@@ -98,7 +117,7 @@ export function useVideoGeneration() {
         }
       }, POLL_INTERVAL_MS);
     },
-    [stopPolling]
+    [stopPolling, startProgressSimulation]
   );
 
   const generate = useCallback(

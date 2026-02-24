@@ -1,7 +1,10 @@
+// BytePlus ModelArk API の実際のステータス値
 export type GenerationStatus =
   | "queued"
   | "pending"
+  | "running"
   | "processing"
+  | "succeeded"
   | "completed"
   | "failed";
 
@@ -32,7 +35,7 @@ export interface SeedanceTaskStatus {
   error?: string;
   meta?: {
     usage?: {
-      credits_used: number;
+      total_tokens: number;
     };
   };
 }

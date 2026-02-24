@@ -9,7 +9,7 @@ const cspDirectives = [
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com",
   "img-src 'self' data: blob: https://*.supabase.co",
-  "media-src 'self' blob: https://*.supabase.co",
+  "media-src 'self' blob: https://*.supabase.co https://*.volces.com",
   "connect-src 'self' https://*.supabase.co https://api.stripe.com https://open.byteplusapi.com https://*.ingest.sentry.io",
   "frame-src https://js.stripe.com https://hooks.stripe.com",
   "object-src 'none'",
