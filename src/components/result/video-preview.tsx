@@ -15,6 +15,7 @@ export function VideoPreview({ videoUrl }: VideoPreviewProps) {
           src={videoUrl}
           controls
           autoPlay
+          muted
           loop
           playsInline
           className="h-full w-full object-contain"

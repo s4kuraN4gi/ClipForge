@@ -327,6 +327,7 @@ export default function CreatePage() {
                       src={videoUrl}
                       controls
                       autoPlay
+                      muted
                       loop
                       playsInline
                       className="h-full w-full object-contain"
@@ -366,6 +367,7 @@ export default function CreatePage() {
                       src={videoUrl}
                       controls
                       autoPlay
+                      muted
                       loop
                       playsInline
                       className="h-full w-full object-contain"
@@ -435,7 +437,14 @@ export default function CreatePage() {
                 <h2 className="text-lg font-medium">生成に失敗しました</h2>
                 <p className="text-sm text-destructive" role="alert">{error}</p>
                 <Button
-                  onClick={() => setCurrentStep(3)}
+                  onClick={() => {
+                    realGen.reset();
+                    sampleGen.reset();
+                    setCurrentStep(1);
+                    setFiles([]);
+                    setSampleImages([]);
+                    setTemplate(null);
+                  }}
                   className="w-full"
                 >
                   もう一度試す

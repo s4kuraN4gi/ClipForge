@@ -66,9 +66,32 @@ export async function GET(
         updateData.video_url = status.data.video_url;
         updateData.completed_at = new Date().toISOString();
 
-        // 動画を Storage に保存
+        // 動画を Storage に保存（SSRF対策: 許可ドメインのみfetch）
         try {
-          const videoResponse = await fetch(status.data.video_url);
+          const videoUrl = status.data.video_url;
+          const allowedHosts = ["volces.com", "bytepluses.com", "byteplus.com"];
+          let isAllowed = false;
+          try {
+            const parsed = new URL(videoUrl);
+            isAllowed =
+              parsed.protocol === "https:" &&
+              allowedHosts.some((h) => parsed.hostname.endsWith(h));
+          } catch {
+            isAllowed = false;
+          }
+
+          if (!isAllowed) {
+            console.error("Blocked suspicious video_url:", videoUrl);
+            return NextResponse.json({
+              taskId: status.id,
+              status: status.status,
+              progress: status.progress,
+              videoUrl: null,
+              error: "動画URLの検証に失敗しました",
+            });
+          }
+
+          const videoResponse = await fetch(videoUrl);
           if (videoResponse.ok) {
             const videoBuffer = await videoResponse.arrayBuffer();
 

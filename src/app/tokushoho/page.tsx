@@ -12,12 +12,12 @@ export default function TokushohoPage() {
       <div className="space-y-8 text-sm leading-relaxed text-foreground/90">
         <section>
           <h2 className="mb-3 text-base font-semibold">販売業者</h2>
-          <p>個人事業主 ［氏名を記載してください］</p>
+          <p>個人事業主 正水 朋</p>
         </section>
 
         <section>
           <h2 className="mb-3 text-base font-semibold">運営統括責任者</h2>
-          <p>［氏名を記載してください］</p>
+          <p>正水 朋</p>
         </section>
 
         <section>

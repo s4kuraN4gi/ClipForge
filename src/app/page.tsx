@@ -67,7 +67,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "動画生成にはどんな技術を使っていますか？",
-    a: "ByteDance の最新 AI 動画生成モデル「Seedance 2.0」を採用しています。静止画から自然な動きのある動画を生成する最先端の技術です。",
+    a: "ByteDance の AI 動画生成モデル「Seedance」を採用しています。静止画から自然な動きのある動画を生成する最先端の技術です。",
   },
 ];
 
@@ -146,19 +146,17 @@ export default function Home() {
                   className="relative mb-4 aspect-[9/16] w-full max-w-[200px] overflow-hidden rounded-2xl bg-black"
                   style={{ boxShadow: "var(--shadow-lg)" }}
                 >
-                  <img
-                    src={tmpl.poster}
-                    alt={`${tmpl.name}のサンプル`}
-                    className="h-full w-full object-cover"
-                    loading="lazy"
+                  <video
+                    src={tmpl.video}
+                    poster={tmpl.poster}
+                    controls
+                    muted
+                    loop
+                    playsInline
+                    preload="metadata"
+                    className="h-full w-full object-contain"
+                    aria-label={`${tmpl.name}のデモ動画`}
                   />
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/90 pl-1">
-                      <svg className="h-5 w-5 text-primary" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                        <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
-                      </svg>
-                    </div>
-                  </div>
                 </div>
                 <h3 className="mb-1 text-base font-bold">{tmpl.name}</h3>
                 <p className="text-center text-sm text-muted-foreground">
@@ -291,17 +289,11 @@ export default function Home() {
       {/* 技術・信頼性 */}
       <section className="border-t border-border bg-muted/50 px-4 py-14">
         <div className="mx-auto max-w-3xl text-center">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-4 py-1.5 text-sm font-medium text-accent">
-            <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-              <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-            </svg>
-            Open Beta
-          </div>
           <p className="mb-6 text-sm text-muted-foreground">
             最新の AI 技術と信頼性の高いインフラで構築
           </p>
           <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm font-medium text-muted-foreground">
-            <span>Seedance 2.0 (ByteDance)</span>
+            <span>Seedance (ByteDance)</span>
             <span className="hidden text-border sm:inline" aria-hidden="true">|</span>
             <span>Supabase</span>
             <span className="hidden text-border sm:inline" aria-hidden="true">|</span>
