@@ -33,23 +33,25 @@ export function useSampleMode(): SampleModeState {
         return;
       }
 
-      // ログイン済み → 全プランで実生成（無料プランは累計3本、有料は月次制限）
+      // ログイン済み → プランに応じてモード切替
+      // 無料プラン: サンプルモード（サンプル画像＋事前生成済み動画）
+      // 有料プラン: 実生成モード（自分の画像をアップロード）
       try {
         const res = await fetch("/api/subscription");
         if (res.ok) {
           const data = await res.json();
           const plan: PlanType = data.subscription?.plan ?? "free";
           setState({
-            isSampleMode: false,
+            isSampleMode: plan === "free",
             isLoading: false,
             user,
             plan,
           });
         } else {
-          setState({ isSampleMode: false, isLoading: false, user, plan: "free" });
+          setState({ isSampleMode: true, isLoading: false, user, plan: "free" });
         }
       } catch {
-        setState({ isSampleMode: false, isLoading: false, user, plan: "free" });
+        setState({ isSampleMode: true, isLoading: false, user, plan: "free" });
       }
     }
     checkMode();
