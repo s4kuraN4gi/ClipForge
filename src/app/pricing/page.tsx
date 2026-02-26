@@ -6,11 +6,11 @@ import { CheckoutButton } from "@/components/pricing/checkout-button";
 export const metadata: Metadata = {
   title: "料金プラン",
   description:
-    "ClipForgeの料金プラン。無料で3本試せます。スターター・ビジネスプランにアップグレードで本格運用。",
+    "ClipForgeの料金プラン。無料でサンプル体験できます。スターター・ビジネスプランにアップグレードで本格運用。",
   openGraph: {
     title: "料金プラン | ClipForge",
     description:
-      "ClipForgeの料金プラン。無料で3本試せます。スターター・ビジネスプランにアップグレードで本格運用。",
+      "ClipForgeの料金プラン。無料でサンプル体験できます。スターター・ビジネスプランにアップグレードで本格運用。",
   },
 };
 
@@ -27,7 +27,7 @@ export default function PricingPage() {
           料金プラン
         </h1>
         <p className="mb-14 text-center text-muted-foreground">
-          無料で3本試せます。気に入ったらアップグレード。
+          まずは無料でサンプルをお試し。気に入ったらアップグレード。
         </p>
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
@@ -88,10 +88,10 @@ export default function PricingPage() {
               </ul>
               {plan.price === 0 ? (
                 <Link
-                  href="/login"
+                  href="/create"
                   className="flex h-11 items-center justify-center rounded-full border border-border text-sm font-semibold transition-all duration-200 hover:bg-muted hover:-translate-y-0.5"
                 >
-                  無料で3本試す
+                  無料で試す
                 </Link>
               ) : (
                 <CheckoutButton
@@ -99,7 +99,7 @@ export default function PricingPage() {
                   variant={plan.highlighted ? "primary" : "outline"}
                   className="w-full rounded-full"
                 >
-                  プランを選択
+                  {plan.highlighted ? "このプランで始める" : "プランを選択"}
                 </CheckoutButton>
               )}
             </div>

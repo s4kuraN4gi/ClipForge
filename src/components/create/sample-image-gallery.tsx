@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback } from "react";
+import Image from "next/image";
 import { SAMPLE_IMAGE_POOL, MAX_IMAGES } from "@/lib/constants";
 
 interface SampleImageGalleryProps {
@@ -53,11 +54,13 @@ export function SampleImageGallery({
               aria-pressed={isSelected}
               aria-label={`${image.label}${isSelected ? "（選択中）" : ""}`}
             >
-              <div className="aspect-square overflow-hidden rounded-xl bg-muted">
-                <img
+              <div className="relative aspect-square overflow-hidden rounded-xl bg-muted">
+                <Image
                   src={image.src}
                   alt={image.label}
-                  className="h-full w-full object-cover"
+                  fill
+                  sizes="(max-width: 640px) 50vw, 25vw"
+                  className="object-cover"
                 />
               </div>
               {isSelected && (

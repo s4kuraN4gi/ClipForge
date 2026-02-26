@@ -373,7 +373,7 @@ export default function Home() {
                     variant={plan.highlighted ? "primary" : "outline"}
                     className="w-full rounded-full"
                   >
-                    プランを選択
+                    {plan.highlighted ? "このプランで始める" : "プランを選択"}
                   </CheckoutButton>
                 )}
               </div>
