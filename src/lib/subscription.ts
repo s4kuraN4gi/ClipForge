@@ -73,6 +73,23 @@ export async function incrementVideoCount(userId: string): Promise<void> {
   await supabase.rpc("increment_video_count", { target_user_id: userId });
 }
 
+/** チェック+インクリメントをアトミックに実行（レースコンディション防止） */
+export async function tryIncrementVideoCount(
+  userId: string,
+  maxCount: number
+): Promise<boolean> {
+  const supabase = createServiceClient();
+  const { data, error } = await supabase.rpc("try_increment_video_count", {
+    target_user_id: userId,
+    max_count: maxCount,
+  });
+  if (error) {
+    console.error("try_increment_video_count error:", error);
+    return false;
+  }
+  return data === true;
+}
+
 /** 動画生成カウントをデクリメント（PostgreSQL RPC） */
 export async function decrementVideoCount(userId: string): Promise<void> {
   const supabase = createServiceClient();

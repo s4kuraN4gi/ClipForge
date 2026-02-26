@@ -125,6 +125,12 @@ export function MobileNav({
                 ログイン
               </Link>
               <Link
+                href="/#pricing"
+                className="flex h-11 items-center rounded-lg px-3 text-sm font-medium transition-colors hover:bg-muted"
+              >
+                料金プラン
+              </Link>
+              <Link
                 href="/create"
                 className="flex h-11 items-center rounded-lg px-3 text-sm font-medium text-primary transition-colors hover:bg-primary-light"
               >

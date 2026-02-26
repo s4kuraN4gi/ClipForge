@@ -87,8 +87,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ url: session.url });
   } catch (err) {
-    const message =
-      err instanceof Error ? err.message : "チェックアウトの作成に失敗しました";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("Checkout error:", err);
+    return NextResponse.json(
+      { error: "チェックアウトの作成に失敗しました" },
+      { status: 500 }
+    );
   }
 }

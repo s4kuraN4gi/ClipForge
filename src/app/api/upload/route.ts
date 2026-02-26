@@ -138,12 +138,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Upload API error:", error);
     return NextResponse.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : "アップロードに失敗しました",
-      },
+      { error: "アップロードに失敗しました" },
       { status: 500 }
     );
   }

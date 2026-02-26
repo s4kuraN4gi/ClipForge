@@ -5,7 +5,13 @@ import { ensureFreeSubscription } from "@/lib/subscription";
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/create";
+
+  // オープンリダイレクト対策: 相対パスのみ許可
+  const rawNext = searchParams.get("next") ?? "/create";
+  const next =
+    rawNext.startsWith("/") && !rawNext.startsWith("//") && !rawNext.startsWith("/\\")
+      ? rawNext
+      : "/create";
 
   if (code) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;

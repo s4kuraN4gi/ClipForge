@@ -178,12 +178,7 @@ export async function GET(
   } catch (error) {
     console.error("Status check error:", error);
     return NextResponse.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : "ステータス確認に失敗しました",
-      },
+      { error: "ステータス確認に失敗しました" },
       { status: 500 }
     );
   }

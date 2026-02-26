@@ -9,7 +9,7 @@ import { SampleImageGallery } from "@/components/create/sample-image-gallery";
 import { UpgradeCTA } from "@/components/create/upgrade-cta";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { Spinner } from "@/components/ui/spinner";
-import { Button } from "@/components/ui/button";
+import { Button, buttonStyles } from "@/components/ui/button";
 import { useVideoGeneration } from "@/hooks/use-video-generation";
 import { useSampleMode } from "@/hooks/use-sample-mode";
 import { useSampleGeneration } from "@/hooks/use-sample-generation";
@@ -379,20 +379,26 @@ export default function CreatePage() {
                   <Button
                     size="lg"
                     className="w-full"
-                    onClick={() => {
-                      const a = document.createElement("a");
-                      a.href = videoUrl;
-                      a.download = "clipforge-video.mp4";
-                      a.click();
-                      addToast({ type: "success", title: "ダウンロードを開始しました" });
+                    onClick={async () => {
+                      try {
+                        const res = await fetch(videoUrl);
+                        const blob = await res.blob();
+                        const blobUrl = URL.createObjectURL(blob);
+                        const a = document.createElement("a");
+                        a.href = blobUrl;
+                        a.download = "clipforge-video.mp4";
+                        a.click();
+                        URL.revokeObjectURL(blobUrl);
+                        addToast({ type: "success", title: "ダウンロードを開始しました" });
+                      } catch {
+                        addToast({ type: "error", title: "ダウンロードに失敗しました" });
+                      }
                     }}
                   >
                     動画をダウンロード
                   </Button>
-                  <Link href="/dashboard">
-                    <Button variant="secondary" className="w-full">
-                      ダッシュボードで確認
-                    </Button>
+                  <Link href="/dashboard" className={`${buttonStyles({ variant: "secondary" })} w-full`}>
+                    ダッシュボードで確認
                   </Link>
                   <Button
                     variant="outline"
@@ -417,15 +423,11 @@ export default function CreatePage() {
                   プランをアップグレードすると、より多くの動画を生成できます。
                 </p>
                 <div className="flex flex-col gap-3">
-                  <Link href="/pricing">
-                    <Button size="lg" className="w-full">
-                      プランをアップグレード
-                    </Button>
+                  <Link href="/pricing" className={`${buttonStyles({ size: "lg" })} w-full`}>
+                    プランをアップグレード
                   </Link>
-                  <Link href="/dashboard">
-                    <Button variant="outline" className="w-full">
-                      ダッシュボードへ
-                    </Button>
+                  <Link href="/dashboard" className={`${buttonStyles({ variant: "outline" })} w-full`}>
+                    ダッシュボードへ
                   </Link>
                 </div>
               </div>

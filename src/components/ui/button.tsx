@@ -1,13 +1,16 @@
 import { ButtonHTMLAttributes } from "react";
 import { Spinner } from "./spinner";
 
+export type ButtonVariant = "primary" | "secondary" | "outline" | "ghost";
+export type ButtonSize = "sm" | "md" | "lg";
+
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "outline" | "ghost";
-  size?: "sm" | "md" | "lg";
+  variant?: ButtonVariant;
+  size?: ButtonSize;
   loading?: boolean;
 }
 
-const variantStyles = {
+const variantStyles: Record<ButtonVariant, string> = {
   primary:
     "bg-primary text-white hover:bg-primary-hover focus-visible:ring-primary/50",
   secondary:
@@ -18,7 +21,7 @@ const variantStyles = {
     "bg-transparent hover:bg-muted focus-visible:ring-primary/50",
 };
 
-const sizeStyles = {
+const sizeStyles: Record<ButtonSize, string> = {
   sm: "px-3 py-1.5 text-sm rounded-xl",
   md: "px-4 py-2 text-sm rounded-xl",
   lg: "px-7 py-3 text-base rounded-full",
@@ -29,6 +32,17 @@ const spinnerSizes = {
   md: "sm" as const,
   lg: "md" as const,
 };
+
+/** Link 等でボタンスタイルを再利用するためのヘルパー */
+export function buttonStyles({
+  variant = "primary",
+  size = "md",
+}: {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+} = {}) {
+  return `inline-flex items-center justify-center gap-2 font-medium transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${variantStyles[variant]} ${sizeStyles[size]}`;
+}
 
 export function Button({
   variant = "primary",
@@ -43,7 +57,7 @@ export function Button({
 
   return (
     <button
-      className={`inline-flex items-center justify-center gap-2 font-medium transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 ${variantStyles[variant]} ${sizeStyles[size]} ${loading ? "cursor-wait" : ""} ${className}`}
+      className={`${buttonStyles({ variant, size })} disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 ${loading ? "cursor-wait" : ""} ${className}`}
       disabled={isDisabled}
       aria-busy={loading || undefined}
       aria-disabled={isDisabled || undefined}

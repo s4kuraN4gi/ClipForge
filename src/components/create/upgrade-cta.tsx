@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { buttonStyles } from "@/components/ui/button";
 import type { User } from "@supabase/supabase-js";
 
 interface UpgradeCTAProps {
@@ -42,10 +42,8 @@ export function UpgradeCTA({ variant, user }: UpgradeCTAProps) {
       <p className="mb-4 text-sm text-muted-foreground">
         {config.description}
       </p>
-      <Link href={ctaHref}>
-        <Button size="lg" className="w-full">
-          {ctaLabel}
-        </Button>
+      <Link href={ctaHref} className={`${buttonStyles({ size: "lg" })} w-full`}>
+        {ctaLabel}
       </Link>
       {!user && (
         <p className="mt-3 text-xs text-muted-foreground">

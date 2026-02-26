@@ -114,7 +114,7 @@ export default function Home() {
               <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                 <path d="M3.75 3A1.75 1.75 0 002 4.75v10.5c0 .966.784 1.75 1.75 1.75h12.5A1.75 1.75 0 0018 15.25v-8.5A1.75 1.75 0 0016.25 5h-4.836a.25.25 0 01-.177-.073L9.823 3.513A1.75 1.75 0 008.586 3H3.75z" />
               </svg>
-              無料で3本試してみる
+              無料でサンプルを試す
             </Link>
             <a
               href="#pricing"
@@ -318,7 +318,7 @@ export default function Home() {
             料金プラン
           </h2>
           <p className="mb-14 text-center text-muted-foreground">
-            無料で3本試せます。気に入ったらアップグレード。
+            まずは無料でサンプルをお試し。気に入ったらアップグレード。
           </p>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
             {PRICING_PLANS.map((plan) => (
@@ -362,10 +362,10 @@ export default function Home() {
                 </ul>
                 {plan.price === 0 ? (
                   <Link
-                    href="/login"
+                    href="/create"
                     className="flex h-11 items-center justify-center rounded-full border border-border text-sm font-semibold transition-all duration-200 hover:bg-muted hover:-translate-y-0.5"
                   >
-                    無料で3本試す
+                    無料で試す
                   </Link>
                 ) : (
                   <CheckoutButton
@@ -428,17 +428,17 @@ export default function Home() {
             今すぐ動画を作成しませんか？
           </h2>
           <p className="mb-10 text-lg text-muted-foreground">
-            無料アカウントを作成して、3本まで動画を試せます。
+            アカウント登録なしですぐに試せます。
           </p>
           <Link
-            href="/login"
+            href="/create"
             className="inline-flex h-13 items-center justify-center gap-2 rounded-full bg-primary px-10 text-base font-semibold text-white transition-all duration-200 hover:bg-primary-hover hover:-translate-y-0.5"
             style={{ boxShadow: "var(--shadow-glow)" }}
           >
             <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
               <path d="M3.75 3A1.75 1.75 0 002 4.75v10.5c0 .966.784 1.75 1.75 1.75h12.5A1.75 1.75 0 0018 15.25v-8.5A1.75 1.75 0 0016.25 5h-4.836a.25.25 0 01-.177-.073L9.823 3.513A1.75 1.75 0 008.586 3H3.75z" />
             </svg>
-            無料で3本試してみる
+            無料でサンプルを試す
           </Link>
         </div>
       </section>

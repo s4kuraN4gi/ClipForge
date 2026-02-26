@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createVideoGeneration } from "@/lib/seedance/client";
 import { TEMPLATES } from "@/lib/constants";
-import { checkVideoLimit, incrementVideoCount } from "@/lib/subscription";
+import { checkVideoLimit, incrementVideoCount, tryIncrementVideoCount } from "@/lib/subscription";
 import { rateLimit, getClientIp, RATE_LIMITS } from "@/lib/rate-limit";
 import type { TemplateType } from "@/types";
 
@@ -40,6 +40,23 @@ export async function POST(request: NextRequest) {
     if (body.imageUrls.length > 1) {
       return NextResponse.json(
         { error: "画像は1枚のみアップロードできます" },
+        { status: 400 }
+      );
+    }
+
+    // S-2: imageUrl が Supabase Storage の署名付きURLであることを検証
+    try {
+      const parsedUrl = new URL(body.imageUrls[0]);
+      const supabaseHost = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL!).hostname;
+      if (parsedUrl.hostname !== supabaseHost) {
+        return NextResponse.json(
+          { error: "無効な画像URLです" },
+          { status: 400 }
+        );
+      }
+    } catch {
+      return NextResponse.json(
+        { error: "無効な画像URLです" },
         { status: 400 }
       );
     }
@@ -122,10 +139,34 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // S-9: 入力バリデーション（プロンプトインジェクション対策）
+    if (body.productName && body.productName.length > 100) {
+      return NextResponse.json(
+        { error: "商品名は100文字以内で入力してください" },
+        { status: 400 }
+      );
+    }
+    if (body.productPrice && body.productPrice.length > 20) {
+      return NextResponse.json(
+        { error: "価格は20文字以内で入力してください" },
+        { status: 400 }
+      );
+    }
+    if (body.catchphrase && body.catchphrase.length > 200) {
+      return NextResponse.json(
+        { error: "キャッチフレーズは200文字以内で入力してください" },
+        { status: 400 }
+      );
+    }
+
     // テンプレートに基づくプロンプト生成
     let prompt = template.prompt;
     if (body.productName) {
-      prompt += `, featuring "${body.productName}"`;
+      // 制御文字を除去してプロンプトに結合
+      const sanitized = body.productName.replace(/[\x00-\x1F\x7F]/g, "").trim();
+      if (sanitized) {
+        prompt += `, featuring "${sanitized}"`;
+      }
     }
 
     // 無料プランは透かし付き
@@ -141,8 +182,12 @@ export async function POST(request: NextRequest) {
       watermark: useWatermark,
     });
 
-    // 生成カウントをインクリメント
-    await incrementVideoCount(user.id);
+    // S-13: アトミックにカウントをインクリメント（API成功後）
+    if (limitResult.limit !== null) {
+      await tryIncrementVideoCount(user.id, limitResult.limit);
+    } else {
+      await incrementVideoCount(user.id);
+    }
 
     // DB に生成動画レコードを作成
     if (projectId) {
@@ -168,12 +213,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Generate API error:", error);
     return NextResponse.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : "動画生成に失敗しました",
-      },
+      { error: "動画生成に失敗しました" },
       { status: 500 }
     );
   }

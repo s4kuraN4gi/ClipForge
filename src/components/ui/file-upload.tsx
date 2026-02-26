@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   MAX_IMAGES,
   MAX_IMAGE_SIZE_MB,
@@ -20,7 +20,17 @@ export function FileUpload({
 }: FileUploadProps) {
   const [isDragOver, setIsDragOver] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // ObjectURL の生成と破棄を管理（メモリリーク防止）
+  useEffect(() => {
+    const urls = selectedFiles.map((file) => URL.createObjectURL(file));
+    setPreviewUrls(urls);
+    return () => {
+      urls.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [selectedFiles]);
 
   const validateFiles = useCallback(
     (files: File[]): File[] => {
@@ -145,11 +155,13 @@ export function FileUpload({
           {selectedFiles.map((file, index) => (
             <div key={`${file.name}-${index}`} className="group relative">
               <div className="aspect-square overflow-hidden rounded-xl bg-muted">
-                <img
-                  src={URL.createObjectURL(file)}
-                  alt={`商品画像 ${index + 1}`}
-                  className="h-full w-full object-cover"
-                />
+                {previewUrls[index] && (
+                  <img
+                    src={previewUrls[index]}
+                    alt={`商品画像 ${index + 1}`}
+                    className="h-full w-full object-cover"
+                  />
+                )}
               </div>
               <button
                 type="button"

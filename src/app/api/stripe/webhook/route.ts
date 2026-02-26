@@ -30,9 +30,18 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // べき等性は DB の upsert / update に依拠（Vercel serverless では in-memory Map は共有されない）
-
   const supabase = createServiceClient();
+
+  // S-11: べき等性チェック（event.id で重複処理を防止）
+  const { data: existing } = await supabase
+    .from("processed_webhook_events")
+    .select("event_id")
+    .eq("event_id", event.id)
+    .single();
+
+  if (existing) {
+    return NextResponse.json({ received: true, deduplicated: true });
+  }
 
   try {
     switch (event.type) {
@@ -211,6 +220,12 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
+
+  // 処理済みイベントを記録
+  await supabase.from("processed_webhook_events").insert({
+    event_id: event.id,
+    event_type: event.type,
+  });
 
   return NextResponse.json({ received: true });
 }
