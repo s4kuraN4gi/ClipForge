@@ -51,11 +51,11 @@ const FAQ_ITEMS = [
   },
   {
     q: "無料プランでは何ができますか？",
-    a: "無料アカウントを作成すると、累計3本まで動画を生成できます（透かし付き）。3種類のテンプレートすべてを試せます。",
+    a: "無料アカウントを作成すると、1本無料で動画を生成できます（透かし付き）。3種類のテンプレートすべてを試せます。",
   },
   {
     q: "有料プランとの違いは？",
-    a: "有料プランでは透かしなしの動画を月15本（スターター）または月50本（ビジネス）まで生成できます。ビジネスプランでは独自ブランディング機能も利用可能です。",
+    a: "有料プランでは透かしなしの動画を月15本（スターター）または月50本（ビジネス）まで生成できます。無料プランは1本のみですが、有料プランなら毎月の上限まで何度でも生成できます。",
   },
   {
     q: "生成した動画はどこで使えますか？",
@@ -365,7 +365,7 @@ export default function Home() {
                     href="/create"
                     className="flex h-11 items-center justify-center rounded-full border border-border text-sm font-semibold transition-all duration-200 hover:bg-muted hover:-translate-y-0.5"
                   >
-                    無料で試す
+                    無料で1本試す
                   </Link>
                 ) : (
                   <CheckoutButton

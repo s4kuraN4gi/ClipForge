@@ -34,12 +34,11 @@ export const PRICING_PLANS: PricingPlan[] = [
     price: 0,
     priceLabel: "¥0",
     features: [
-      "累計3本まで生成",
-      "透かし付き",
+      "1本無料で生成（透かし付き）",
       "3種類のテンプレート",
       "アカウント登録で利用可能",
     ],
-    videoLimit: 3,
+    videoLimit: 1,
   },
   {
     id: "starter",

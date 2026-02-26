@@ -91,7 +91,7 @@ export default function PricingPage() {
                   href="/create"
                   className="flex h-11 items-center justify-center rounded-full border border-border text-sm font-semibold transition-all duration-200 hover:bg-muted hover:-translate-y-0.5"
                 >
-                  無料で試す
+                  無料で1本試す
                 </Link>
               ) : (
                 <CheckoutButton
