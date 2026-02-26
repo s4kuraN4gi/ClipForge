@@ -55,7 +55,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "有料プランとの違いは？",
-    a: "有料プランでは透かしなしの動画を月15本（スターター）または月50本（ビジネス）まで生成できます。無料プランは1本のみですが、有料プランなら毎月の上限まで何度でも生成できます。",
+    a: "有料プランでは透かしなしの動画を月15本（スターター）または月25本（ビジネス）まで生成できます。無料プランは1本のみですが、有料プランなら毎月の上限まで何度でも生成できます。",
   },
   {
     q: "生成した動画はどこで使えますか？",
@@ -140,7 +140,7 @@ export default function Home() {
             写真1枚から、用途に合ったスタイルの動画を自動作成します
           </p>
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
-            {DEMO_TEMPLATES.map((tmpl) => (
+            {DEMO_TEMPLATES.map((tmpl, index) => (
               <div key={tmpl.name} className="flex flex-col items-center">
                 <div
                   className="relative mb-4 aspect-[9/16] w-full max-w-[200px] overflow-hidden rounded-2xl bg-black"
@@ -153,7 +153,7 @@ export default function Home() {
                     muted
                     loop
                     playsInline
-                    preload="metadata"
+                    preload={index === 0 ? "metadata" : "none"}
                     className="h-full w-full object-contain"
                     aria-label={`${tmpl.name}のデモ動画`}
                   />

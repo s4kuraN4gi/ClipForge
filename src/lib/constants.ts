@@ -61,14 +61,14 @@ export const PRICING_PLANS: PricingPlan[] = [
     price: 4980,
     priceLabel: "¥4,980/月",
     features: [
-      "月50本まで生成",
+      "月25本まで生成",
       "透かしなし",
       "1080p画質",
       "全テンプレート",
       "BGM自動選択",
       "独自ブランディング",
     ],
-    videoLimit: 50,
+    videoLimit: 25,
   },
 ];
 

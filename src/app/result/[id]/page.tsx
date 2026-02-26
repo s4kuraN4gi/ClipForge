@@ -6,7 +6,7 @@ import { VideoPreview } from "@/components/result/video-preview";
 import { DownloadButton } from "@/components/result/download-button";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { Spinner } from "@/components/ui/spinner";
-import { Button } from "@/components/ui/button";
+import { buttonStyles } from "@/components/ui/button";
 import { useVideoGeneration } from "@/hooks/use-video-generation";
 import Link from "next/link";
 
@@ -55,15 +55,11 @@ export default function ResultPage() {
           <div className="animate-fade-in space-y-6">
             <VideoPreview videoUrl={videoUrl} />
             <DownloadButton videoUrl={videoUrl} />
-            <Link href="/dashboard" className="block">
-              <Button variant="secondary" className="w-full">
-                ダッシュボードに戻る
-              </Button>
+            <Link href="/dashboard" className={`${buttonStyles({ variant: "secondary" })} w-full`}>
+              ダッシュボードに戻る
             </Link>
-            <Link href="/create" className="block">
-              <Button variant="outline" className="w-full">
-                新しい動画を作成
-              </Button>
+            <Link href="/create" className={`${buttonStyles({ variant: "outline" })} w-full`}>
+              新しい動画を作成
             </Link>
           </div>
         )}
@@ -73,8 +69,8 @@ export default function ResultPage() {
             <div className="text-4xl">😞</div>
             <h2 className="text-lg font-medium">生成に失敗しました</h2>
             <p className="text-sm text-destructive" role="alert">{error}</p>
-            <Link href="/create">
-              <Button className="w-full">もう一度試す</Button>
+            <Link href="/create" className={`${buttonStyles()} w-full`}>
+              もう一度試す
             </Link>
           </div>
         )}
@@ -100,13 +96,11 @@ export default function ResultPage() {
               このプロジェクトはまだ生成されていないか、存在しません。
             </p>
             <div className="flex flex-col gap-3">
-              <Link href="/create">
-                <Button className="w-full">動画を作成する</Button>
+              <Link href="/create" className={`${buttonStyles()} w-full`}>
+                動画を作成する
               </Link>
-              <Link href="/dashboard">
-                <Button variant="outline" className="w-full">
-                  ダッシュボードへ
-                </Button>
+              <Link href="/dashboard" className={`${buttonStyles({ variant: "outline" })} w-full`}>
+                ダッシュボードへ
               </Link>
             </div>
           </div>

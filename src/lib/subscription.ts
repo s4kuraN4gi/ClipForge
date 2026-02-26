@@ -96,22 +96,18 @@ export async function decrementVideoCount(userId: string): Promise<void> {
   await supabase.rpc("decrement_video_count", { target_user_id: userId });
 }
 
-/** 無料プラン サブスクリプションを作成（冪等） */
+/** 無料プラン サブスクリプションを作成（冪等・アトミック） */
 export async function ensureFreeSubscription(userId: string): Promise<void> {
   const supabase = createServiceClient();
 
-  const { data: existing } = await supabase
-    .from("subscriptions")
-    .select("id")
-    .eq("user_id", userId)
-    .single();
-
-  if (existing) return; // 既に存在する
-
-  await supabase.from("subscriptions").insert({
-    user_id: userId,
-    plan: "free",
-    status: "active",
-    monthly_video_count: 0,
-  });
+  // H-1: ON CONFLICT でアトミックに冪等性を保証（race condition 防止）
+  await supabase.from("subscriptions").upsert(
+    {
+      user_id: userId,
+      plan: "free",
+      status: "active",
+      monthly_video_count: 0,
+    },
+    { onConflict: "user_id", ignoreDuplicates: true }
+  );
 }

@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { buttonStyles } from "@/components/ui/button";
 
 interface Props {
   searchParams: Promise<{ session_id?: string }>;
@@ -26,15 +26,11 @@ export default async function CheckoutSuccessPage({ searchParams }: Props) {
             ご利用ありがとうございます。さっそく動画を作成しましょう。
           </p>
           <div className="flex flex-col gap-3">
-            <Link href="/create">
-              <Button size="lg" className="w-full">
-                動画を作成する
-              </Button>
+            <Link href="/create" className={`${buttonStyles({ size: "lg" })} w-full`}>
+              動画を作成する
             </Link>
-            <Link href="/dashboard">
-              <Button variant="outline" size="lg" className="w-full">
-                ダッシュボードへ
-              </Button>
+            <Link href="/dashboard" className={`${buttonStyles({ variant: "outline", size: "lg" })} w-full`}>
+              ダッシュボードへ
             </Link>
           </div>
         </Card>

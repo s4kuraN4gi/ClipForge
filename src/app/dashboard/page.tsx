@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { SubscriptionCard } from "@/components/dashboard/subscription-card";
+import { buttonStyles } from "@/components/ui/button";
 import type { Project, GeneratedVideo, ProjectImage } from "@/types";
 
 interface ProjectWithRelations extends Project {
@@ -65,8 +66,8 @@ export default function DashboardPage() {
       <div className="mx-auto max-w-3xl">
         <div className="mb-8 flex items-center justify-between">
           <h1 className="text-2xl font-bold">ダッシュボード</h1>
-          <Link href="/create">
-            <Button>新しい動画を作成</Button>
+          <Link href="/create" className={buttonStyles()}>
+            新しい動画を作成
           </Link>
         </div>
 
@@ -110,8 +111,8 @@ export default function DashboardPage() {
             <p className="mb-6 text-sm text-muted-foreground">
               最初の動画を作成してみましょう
             </p>
-            <Link href="/create">
-              <Button>動画を作成する</Button>
+            <Link href="/create" className={buttonStyles()}>
+              動画を作成する
             </Link>
           </Card>
         )}

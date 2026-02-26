@@ -227,5 +227,12 @@ export async function POST(request: NextRequest) {
     event_type: event.type,
   });
 
+  // H-2: 30日以上前の古いイベントを定期クリーンアップ（約1%の確率で実行）
+  if (Math.random() < 0.01) {
+    supabase.rpc("cleanup_old_webhook_events").then(({ error }) => {
+      if (error) console.error("Webhook cleanup error:", error);
+    });
+  }
+
   return NextResponse.json({ received: true });
 }

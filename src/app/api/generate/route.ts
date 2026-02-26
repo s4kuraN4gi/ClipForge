@@ -69,6 +69,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // S-9: 入力バリデーション（プロンプトインジェクション対策）
+    // C-2: バリデーションを DB 保存の前に実行
+    if (body.productName && body.productName.length > 100) {
+      return NextResponse.json(
+        { error: "商品名は100文字以内で入力してください" },
+        { status: 400 }
+      );
+    }
+    if (body.productPrice && body.productPrice.length > 20) {
+      return NextResponse.json(
+        { error: "価格は20文字以内で入力してください" },
+        { status: 400 }
+      );
+    }
+    if (body.catchphrase && body.catchphrase.length > 200) {
+      return NextResponse.json(
+        { error: "キャッチフレーズは200文字以内で入力してください" },
+        { status: 400 }
+      );
+    }
+
     // 認証チェック
     const supabase = await createClient();
     const {
@@ -137,26 +158,6 @@ export async function POST(request: NextRequest) {
           }
         }
       }
-    }
-
-    // S-9: 入力バリデーション（プロンプトインジェクション対策）
-    if (body.productName && body.productName.length > 100) {
-      return NextResponse.json(
-        { error: "商品名は100文字以内で入力してください" },
-        { status: 400 }
-      );
-    }
-    if (body.productPrice && body.productPrice.length > 20) {
-      return NextResponse.json(
-        { error: "価格は20文字以内で入力してください" },
-        { status: 400 }
-      );
-    }
-    if (body.catchphrase && body.catchphrase.length > 200) {
-      return NextResponse.json(
-        { error: "キャッチフレーズは200文字以内で入力してください" },
-        { status: 400 }
-      );
     }
 
     // テンプレートに基づくプロンプト生成

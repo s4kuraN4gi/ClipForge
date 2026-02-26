@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { buttonStyles } from "@/components/ui/button";
 
 export default function CheckoutCancelPage() {
   return (
@@ -15,15 +15,11 @@ export default function CheckoutCancelPage() {
             プランの選択をやり直す場合は、料金プランページからお選びください。
           </p>
           <div className="flex flex-col gap-3">
-            <Link href="/#pricing">
-              <Button size="lg" className="w-full">
-                料金プランを見る
-              </Button>
+            <Link href="/#pricing" className={`${buttonStyles({ size: "lg" })} w-full`}>
+              料金プランを見る
             </Link>
-            <Link href="/dashboard">
-              <Button variant="outline" size="lg" className="w-full">
-                ダッシュボードへ
-              </Button>
+            <Link href="/dashboard" className={`${buttonStyles({ variant: "outline", size: "lg" })} w-full`}>
+              ダッシュボードへ
             </Link>
           </div>
         </Card>
