@@ -5,7 +5,6 @@ import type {
   VideoProvider,
 } from "./types";
 import { SeedanceProvider } from "./providers/seedance";
-import { FalProvider } from "./providers/fal";
 import { WaveSpeedProvider } from "./providers/wavespeed";
 import { MockProvider } from "./providers/mock";
 
@@ -13,16 +12,12 @@ export type { VideoGenerateResponse, VideoTaskStatus, VideoGenerationParams };
 
 type ProviderType =
   | "seedance"
-  | "fal-wan"
-  | "fal-hailuo"
   | "wavespeed"
   | "wavespeed-fast"
   | "mock";
 
 const VALID_PROVIDERS: ProviderType[] = [
   "seedance",
-  "fal-wan",
-  "fal-hailuo",
   "wavespeed",
   "wavespeed-fast",
   "mock",
@@ -57,12 +52,6 @@ function getProvider(): VideoProvider {
   switch (type) {
     case "seedance":
       _provider = new SeedanceProvider();
-      break;
-    case "fal-wan":
-      _provider = new FalProvider("wan");
-      break;
-    case "fal-hailuo":
-      _provider = new FalProvider("hailuo");
       break;
     case "wavespeed":
       _provider = new WaveSpeedProvider("wan-720p");
