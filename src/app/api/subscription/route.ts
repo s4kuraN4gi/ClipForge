@@ -15,7 +15,14 @@ export async function GET() {
 
     const subscription = await getSubscription(user.id);
 
-    return NextResponse.json({ subscription });
+    return NextResponse.json(
+      { subscription },
+      {
+        headers: {
+          "Cache-Control": "private, max-age=60, stale-while-revalidate=300",
+        },
+      }
+    );
   } catch {
     return NextResponse.json(
       { error: "サブスクリプションの取得に失敗しました" },

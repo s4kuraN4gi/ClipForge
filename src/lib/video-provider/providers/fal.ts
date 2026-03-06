@@ -20,7 +20,8 @@ const FAL_MODELS: Record<FalModel, FalModelConfig> = {
     mapInput: (params) => ({
       image_url: params.imageUrl,
       prompt: params.prompt,
-      num_frames: 81, // ~5.4s at 15fps (720p)
+      // 15fps: 5秒=81フレーム, 15秒=225フレーム
+      num_frames: (params.duration ?? 5) >= 15 ? 225 : 81,
       resolution: "720p",
     }),
   },
@@ -31,7 +32,7 @@ const FAL_MODELS: Record<FalModel, FalModelConfig> = {
     mapInput: (params) => ({
       image_url: params.imageUrl,
       prompt: params.prompt,
-      duration: "5",
+      duration: String(params.duration ?? 5),
       prompt_optimizer: true,
     }),
   },

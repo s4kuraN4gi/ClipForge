@@ -119,11 +119,19 @@ body {
 }
 
 /* Decorative blob shapes */
-.blob-1 {
+.blob-1,
+.blob-2,
+.blob-3 {
   position: absolute;
+  border-radius: 50%;
+  contain: layout style;
+  will-change: transform;
+  pointer-events: none;
+}
+
+.blob-1 {
   width: 400px;
   height: 400px;
-  border-radius: 50%;
   background: linear-gradient(135deg, var(--primary-light) 0%, transparent 70%);
   filter: blur(60px);
   opacity: 0.6;
@@ -131,10 +139,8 @@ body {
 }
 
 .blob-2 {
-  position: absolute;
   width: 300px;
   height: 300px;
-  border-radius: 50%;
   background: linear-gradient(225deg, rgb(60 180 160 / 0.12) 0%, transparent 70%);
   filter: blur(50px);
   opacity: 0.5;
@@ -142,10 +148,8 @@ body {
 }
 
 .blob-3 {
-  position: absolute;
   width: 250px;
   height: 250px;
-  border-radius: 50%;
   background: linear-gradient(315deg, rgb(242 204 143 / 0.2) 0%, transparent 70%);
   filter: blur(45px);
   opacity: 0.5;
