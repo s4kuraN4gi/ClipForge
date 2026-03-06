@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { PRICING_PLANS } from "@/lib/constants";
+import { PRICING_PLANS, TEMPLATES, TEMPLATE_CATEGORIES } from "@/lib/constants";
 import { CheckoutButton } from "@/components/pricing/checkout-button";
 
 const jsonLd = {
@@ -165,6 +165,39 @@ export default function Home() {
               </div>
             ))}
           </div>
+          {/* 全12テンプレート一覧 */}
+          <div className="mt-16">
+            <h3 className="mb-6 text-center text-lg font-bold">
+              全12テンプレート
+            </h3>
+            <div className="space-y-6">
+              {TEMPLATE_CATEGORIES.map((cat) => (
+                <div key={cat.id}>
+                  <p className="mb-3 text-center text-xs font-semibold tracking-wider text-accent">
+                    {cat.label}
+                  </p>
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    {TEMPLATES.filter((t) => t.category === cat.id).map(
+                      (t) => (
+                        <div
+                          key={t.id}
+                          className="flex flex-col items-center gap-1.5 rounded-xl border border-border bg-background p-4 text-center transition-all duration-200 hover:-translate-y-0.5"
+                          style={{ boxShadow: "var(--shadow-sm)" }}
+                        >
+                          <span className="text-2xl">{t.icon}</span>
+                          <span className="text-sm font-medium">{t.name}</span>
+                          <span className="text-xs leading-tight text-muted-foreground">
+                            {t.description}
+                          </span>
+                        </div>
+                      )
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
           <div className="mt-10 text-center">
             <Link
               href="/create"
