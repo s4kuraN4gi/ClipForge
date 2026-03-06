@@ -51,7 +51,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "無料プランでは何ができますか？",
-    a: "無料アカウントを作成すると、1本無料で動画を生成できます（透かし付き）。3種類のテンプレートすべてを試せます。",
+    a: "無料アカウントを作成すると、1本無料で動画を生成できます（透かし付き）。12種類のテンプレートすべてを試せます。",
   },
   {
     q: "有料プランとの違いは？",
@@ -134,7 +134,7 @@ export default function Home() {
             DEMO
           </div>
           <h2 className="mb-4 text-center text-2xl font-bold sm:text-3xl">
-            3種類のテンプレートで動画を生成
+            12種類のテンプレートで動画を生成
           </h2>
           <p className="mb-14 text-center text-muted-foreground">
             写真1枚から、用途に合ったスタイルの動画を自動作成します
@@ -219,7 +219,7 @@ export default function Home() {
                 ),
                 title: "テンプレートを選択",
                 description:
-                  "商品紹介・Before/After・360°回転風の3種類から選ぶだけ。",
+                  "12種類のテンプレートから選ぶだけ。",
               },
               {
                 step: "3",

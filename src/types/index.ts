@@ -1,4 +1,18 @@
-export type TemplateType = "showcase" | "before_after" | "rotation";
+export type TemplateType =
+  | "showcase"
+  | "before_after"
+  | "rotation"
+  | "close_up"
+  | "minimal"
+  | "dramatic"
+  | "sparkle"
+  | "zoom_in"
+  | "lifestyle"
+  | "gift"
+  | "seasonal"
+  | "floating";
+
+export type TemplateCategory = "basic" | "effects" | "scene";
 
 export type ProjectStatus = "draft" | "generating" | "completed" | "failed";
 
@@ -63,6 +77,7 @@ export interface Template {
   description: string;
   icon: string;
   prompt: string;
+  category: TemplateCategory;
 }
 
 export interface PricingPlan {

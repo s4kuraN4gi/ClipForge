@@ -15,6 +15,7 @@ import { useSampleMode } from "@/hooks/use-sample-mode";
 import { useSampleGeneration } from "@/hooks/use-sample-generation";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
+import { TEMPLATES, DURATION_OPTIONS, DEFAULT_DURATION } from "@/lib/constants";
 import type { TemplateType } from "@/types";
 
 const STEPS = ["写真選択", "テンプレート", "生成"];
@@ -40,6 +41,7 @@ export default function CreatePage() {
   const [files, setFiles] = useState<File[]>([]);
   const [sampleImages, setSampleImages] = useState<string[]>([]);
   const [template, setTemplate] = useState<TemplateType | null>(null);
+  const [duration, setDuration] = useState(DEFAULT_DURATION);
 
   const { isSampleMode, isLoading: modeLoading, user } = useSampleMode();
   const realGen = useVideoGeneration();
@@ -106,6 +108,7 @@ export default function CreatePage() {
         imageUrls,
         storagePaths,
         template,
+        duration,
         ...formData,
       });
     },
@@ -249,9 +252,30 @@ export default function CreatePage() {
                   </p>
                 </div>
 
+                {/* 再生時間セレクター */}
+                <div>
+                  <h3 className="mb-2 text-sm font-medium">再生時間</h3>
+                  <div className="flex gap-2">
+                    {DURATION_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => setDuration(opt.value)}
+                        className={`rounded-full px-5 py-2 text-sm font-medium transition-all duration-200 ${
+                          duration === opt.value
+                            ? "bg-primary text-white"
+                            : "bg-muted text-muted-foreground hover:bg-muted/80"
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 {/* 選択内容のサマリー */}
                 <div className="rounded-xl bg-muted p-4">
-                  <div className="flex items-center gap-4 text-sm">
+                  <div className="flex flex-wrap items-center gap-4 text-sm">
                     <div>
                       <span className="text-muted-foreground">写真: </span>
                       <span className="font-medium">
@@ -265,12 +289,12 @@ export default function CreatePage() {
                         テンプレート:{" "}
                       </span>
                       <span className="font-medium">
-                        {template === "showcase"
-                          ? "商品紹介"
-                          : template === "before_after"
-                            ? "Before/After"
-                            : "360°回転風"}
+                        {TEMPLATES.find((t) => t.id === template)?.name ?? template}
                       </span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">再生時間: </span>
+                      <span className="font-medium">{duration}秒</span>
                     </div>
                   </div>
                 </div>
@@ -347,6 +371,7 @@ export default function CreatePage() {
                       setCurrentStep(1);
                       setSampleImages([]);
                       setTemplate(null);
+                      setDuration(DEFAULT_DURATION);
                       sampleGen.reset();
                     }}
                     className="w-full"
@@ -406,6 +431,7 @@ export default function CreatePage() {
                       setCurrentStep(1);
                       setFiles([]);
                       setTemplate(null);
+                      setDuration(DEFAULT_DURATION);
                     }}
                     className="w-full"
                   >
@@ -446,6 +472,7 @@ export default function CreatePage() {
                     setFiles([]);
                     setSampleImages([]);
                     setTemplate(null);
+                    setDuration(DEFAULT_DURATION);
                   }}
                   className="w-full"
                 >

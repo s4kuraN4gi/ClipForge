@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import {
   SAMPLE_VIDEOS,
+  DEFAULT_SAMPLE_VIDEO,
   SAMPLE_GENERATION_DURATION_MS,
   SAMPLE_PROGRESS_INTERVAL_MS,
 } from "@/lib/constants";
@@ -49,7 +50,7 @@ export function useSampleGeneration() {
           setState({
             status: "completed",
             progress: 100,
-            videoUrl: SAMPLE_VIDEOS[template],
+            videoUrl: SAMPLE_VIDEOS[template] ?? DEFAULT_SAMPLE_VIDEO,
           });
         } else {
           setState((prev) => ({

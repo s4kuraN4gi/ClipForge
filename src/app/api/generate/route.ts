@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { createVideoGeneration } from "@/lib/seedance/client";
+import { createVideoGeneration } from "@/lib/video-provider";
 import { TEMPLATES } from "@/lib/constants";
 import { checkVideoLimit, incrementVideoCount, tryIncrementVideoCount } from "@/lib/subscription";
 import { rateLimit, getClientIp, RATE_LIMITS } from "@/lib/rate-limit";
@@ -10,6 +10,7 @@ interface GenerateRequestBody {
   imageUrls: string[];
   storagePaths?: string[];
   template: TemplateType;
+  duration?: number;
   productName?: string;
   productPrice?: string;
   catchphrase?: string;
@@ -68,6 +69,12 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // duration バリデーション（5秒 or 15秒、デフォルト5）
+    const ALLOWED_DURATIONS = [5, 15];
+    const requestedDuration = ALLOWED_DURATIONS.includes(body.duration ?? 5)
+      ? (body.duration ?? 5)
+      : 5;
 
     // S-9: 入力バリデーション（プロンプトインジェクション対策）
     // C-2: バリデーションを DB 保存の前に実行
@@ -173,11 +180,11 @@ export async function POST(request: NextRequest) {
     // 無料プランは透かし付き
     const useWatermark = limitResult.plan === "free";
 
-    // Seedance API で動画生成タスクを作成（最初の画像を使用）
+    // 動画生成タスクを作成（最初の画像を使用）
     const result = await createVideoGeneration({
       imageUrl: body.imageUrls[0],
       prompt,
-      duration: 8,
+      duration: requestedDuration,
       resolution: "1080p",
       aspectRatio: "9:16",
       watermark: useWatermark,

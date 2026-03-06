@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
-import { getTaskStatus } from "@/lib/seedance/client";
+import { getTaskStatus, getVideoAllowedHosts } from "@/lib/video-provider";
 import { decrementVideoCount } from "@/lib/subscription";
 
 export async function GET(
@@ -69,7 +69,7 @@ export async function GET(
         // 動画を Storage に保存（SSRF対策: 許可ドメインのみfetch）
         try {
           const videoUrl = status.data.video_url;
-          const allowedHosts = ["volces.com", "bytepluses.com", "byteplus.com"];
+          const allowedHosts = getVideoAllowedHosts();
           let isAllowed = false;
           try {
             const parsed = new URL(videoUrl);

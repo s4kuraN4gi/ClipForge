@@ -19,6 +19,7 @@ interface GenerateParams {
   imageUrls: string[];
   storagePaths?: string[];
   template: string;
+  duration?: number;
   productName?: string;
   productPrice?: string;
   catchphrase?: string;

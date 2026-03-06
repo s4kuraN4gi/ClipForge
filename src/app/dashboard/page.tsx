@@ -25,11 +25,11 @@ const STATUS_LABELS: Record<string, { label: string; className: string }> = {
   failed: { label: "失敗", className: "bg-red-100 text-red-800" },
 };
 
-const TEMPLATE_LABELS: Record<string, string> = {
-  showcase: "商品紹介",
-  before_after: "Before/After",
-  rotation: "360°回転風",
-};
+import { TEMPLATES } from "@/lib/constants";
+
+const TEMPLATE_LABELS: Record<string, string> = Object.fromEntries(
+  TEMPLATES.map((t) => [t.id, t.name])
+);
 
 export default function DashboardPage() {
   const [projects, setProjects] = useState<ProjectWithRelations[]>([]);
