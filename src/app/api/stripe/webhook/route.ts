@@ -4,6 +4,14 @@ import { getStripe } from "@/lib/stripe/client";
 import { createServiceClient } from "@/lib/supabase/server";
 import { getPlanFromPriceId } from "@/lib/stripe/config";
 
+/** Subscription items から metered item を見つける */
+function findMeteredItemId(items: Stripe.SubscriptionItem[]): string | null {
+  const meteredItem = items.find(
+    (item) => item.price.recurring?.usage_type === "metered"
+  );
+  return meteredItem?.id ?? null;
+}
+
 export async function POST(request: NextRequest) {
   const body = await request.text();
   const signature = request.headers.get("stripe-signature");
@@ -32,7 +40,7 @@ export async function POST(request: NextRequest) {
 
   const supabase = createServiceClient();
 
-  // S-11: べき等性チェック（event.id で重複処理を防止）
+  // べき等性チェック
   const { data: existing } = await supabase
     .from("processed_webhook_events")
     .select("event_id")
@@ -52,9 +60,9 @@ export async function POST(request: NextRequest) {
 
         if (!userId || !plan) break;
 
-        // Stripe Subscription の詳細を取得
         let periodStart: string | null = null;
         let periodEnd: string | null = null;
+        let meteredItemId: string | null = null;
 
         const subscriptionId =
           typeof session.subscription === "string"
@@ -76,6 +84,7 @@ export async function POST(request: NextRequest) {
               item.current_period_end * 1000
             ).toISOString();
           }
+          meteredItemId = findMeteredItemId(sub.items.data);
         }
 
         const { error: upsertError } = await supabase
@@ -86,10 +95,12 @@ export async function POST(request: NextRequest) {
               plan,
               stripe_customer_id: customerId,
               stripe_subscription_id: subscriptionId,
+              stripe_metered_item_id: meteredItemId,
               status: "active",
               current_period_start: periodStart,
               current_period_end: periodEnd,
               monthly_video_count: 0,
+              extra_video_count: 0,
               cancel_at_period_end: false,
             },
             { onConflict: "user_id" }
@@ -109,6 +120,7 @@ export async function POST(request: NextRequest) {
         const sub = event.data.object as Stripe.Subscription;
         const priceId = sub.items.data[0]?.price?.id;
         const plan = priceId ? getPlanFromPriceId(priceId) : "free";
+        const meteredItemId = findMeteredItemId(sub.items.data);
 
         const item = sub.items.data[0];
         const { error: updateError } = await supabase
@@ -116,6 +128,7 @@ export async function POST(request: NextRequest) {
           .update({
             plan,
             status: sub.status === "active" ? "active" : sub.status,
+            stripe_metered_item_id: meteredItemId,
             current_period_start: item
               ? new Date(item.current_period_start * 1000).toISOString()
               : null,
@@ -145,9 +158,11 @@ export async function POST(request: NextRequest) {
             plan: "free",
             status: "active",
             stripe_subscription_id: null,
+            stripe_metered_item_id: null,
             cancel_at_period_end: false,
             current_period_start: null,
             current_period_end: null,
+            extra_video_count: 0,
           })
           .eq("stripe_subscription_id", sub.id);
 
@@ -175,7 +190,7 @@ export async function POST(request: NextRequest) {
           // 月次リセット
           const { error: resetError } = await supabase
             .from("subscriptions")
-            .update({ monthly_video_count: 0 })
+            .update({ monthly_video_count: 0, extra_video_count: 0 })
             .eq("stripe_subscription_id", subscriptionId);
 
           if (resetError) {
@@ -227,7 +242,7 @@ export async function POST(request: NextRequest) {
     event_type: event.type,
   });
 
-  // H-2: 30日以上前の古いイベントを定期クリーンアップ（約1%の確率で実行）
+  // 古いイベントを定期クリーンアップ（約1%の確率で実行）
   if (Math.random() < 0.01) {
     supabase.rpc("cleanup_old_webhook_events").then(({ error }) => {
       if (error) console.error("Webhook cleanup error:", error);

@@ -13,6 +13,8 @@ interface GenerationState {
   videoUrl: string | null;
   error: string | null;
   upgradeRequired: boolean;
+  requiresConfirmation: boolean;
+  extraCharge: number | null;
 }
 
 interface GenerateParams {
@@ -23,6 +25,7 @@ interface GenerateParams {
   productName?: string;
   productPrice?: string;
   catchphrase?: string;
+  confirmExtra?: boolean;
 }
 
 export function useVideoGeneration() {
@@ -34,11 +37,14 @@ export function useVideoGeneration() {
     videoUrl: null,
     error: null,
     upgradeRequired: false,
+    requiresConfirmation: false,
+    extraCharge: null,
   });
 
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const progressRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const attemptsRef = useRef(0);
+  const pendingParamsRef = useRef<GenerateParams | null>(null);
 
   const stopPolling = useCallback(() => {
     if (pollingRef.current) {
@@ -52,8 +58,6 @@ export function useVideoGeneration() {
     attemptsRef.current = 0;
   }, []);
 
-  // 経過時間ベースの擬似プログレス（API がリアルタイム進捗を返さないため）
-  // 約90秒で90%まで進み、完了時に100%にジャンプ
   const startProgressSimulation = useCallback(() => {
     if (progressRef.current) {
       clearInterval(progressRef.current);
@@ -61,7 +65,6 @@ export function useVideoGeneration() {
     const startTime = Date.now();
     progressRef.current = setInterval(() => {
       const elapsed = (Date.now() - startTime) / 1000;
-      // 90秒で約90%に到達する対数カーブ
       const simulated = Math.min(90, Math.floor(90 * (1 - Math.exp(-elapsed / 40))));
       setState((prev) => {
         if (prev.status !== "generating" || prev.progress >= 100) return prev;
@@ -114,7 +117,6 @@ export function useVideoGeneration() {
           }
         } catch (error) {
           console.error("Polling error:", error);
-          // ポーリングエラーは次の試行で再試行するため、即座に停止しない
         }
       }, POLL_INTERVAL_MS);
     },
@@ -131,6 +133,8 @@ export function useVideoGeneration() {
         videoUrl: null,
         error: null,
         upgradeRequired: false,
+        requiresConfirmation: false,
+        extraCharge: null,
       });
 
       try {
@@ -152,9 +156,29 @@ export function useVideoGeneration() {
               videoUrl: null,
               error: data.error || "月間生成上限に達しました",
               upgradeRequired: true,
+              requiresConfirmation: false,
+              extraCharge: null,
             });
             return;
           }
+
+          // 402: 追加料金の確認が必要
+          if (response.status === 402 && data.requiresConfirmation) {
+            pendingParamsRef.current = params;
+            setState({
+              status: "idle",
+              taskId: null,
+              projectId: null,
+              progress: 0,
+              videoUrl: null,
+              error: null,
+              upgradeRequired: false,
+              requiresConfirmation: true,
+              extraCharge: data.extraCharge,
+            });
+            return;
+          }
+
           throw new Error(data.error || "動画生成の開始に失敗しました");
         }
 
@@ -165,7 +189,6 @@ export function useVideoGeneration() {
           progress: 5,
         }));
 
-        // ポーリング開始
         pollStatus(data.taskId);
       } catch (error) {
         setState({
@@ -179,13 +202,38 @@ export function useVideoGeneration() {
               ? error.message
               : "エラーが発生しました",
           upgradeRequired: false,
+          requiresConfirmation: false,
+          extraCharge: null,
         });
       }
     },
     [pollStatus]
   );
 
-  // DB からプロジェクト状態を復元
+  /** 追加料金確認後にリトライ */
+  const confirmAndGenerate = useCallback(async () => {
+    const params = pendingParamsRef.current;
+    if (!params) return;
+    pendingParamsRef.current = null;
+    await generate({ ...params, confirmExtra: true });
+  }, [generate]);
+
+  /** 確認をキャンセル */
+  const cancelConfirmation = useCallback(() => {
+    pendingParamsRef.current = null;
+    setState({
+      status: "idle",
+      taskId: null,
+      projectId: null,
+      progress: 0,
+      videoUrl: null,
+      error: null,
+      upgradeRequired: false,
+      requiresConfirmation: false,
+      extraCharge: null,
+    });
+  }, []);
+
   const restoreFromProject = useCallback(
     async (projectId: string) => {
       try {
@@ -208,6 +256,8 @@ export function useVideoGeneration() {
             videoUrl: video.video_url,
             error: null,
             upgradeRequired: false,
+            requiresConfirmation: false,
+            extraCharge: null,
           });
           return true;
         }
@@ -221,8 +271,9 @@ export function useVideoGeneration() {
             videoUrl: null,
             error: null,
             upgradeRequired: false,
+            requiresConfirmation: false,
+            extraCharge: null,
           });
-          // ポーリング再開
           pollStatus(video.task_id);
           return true;
         }
@@ -236,6 +287,8 @@ export function useVideoGeneration() {
             videoUrl: null,
             error: video?.error_message || "動画生成に失敗しました",
             upgradeRequired: false,
+            requiresConfirmation: false,
+            extraCharge: null,
           });
           return true;
         }
@@ -248,13 +301,13 @@ export function useVideoGeneration() {
     [pollStatus]
   );
 
-  // アンマウント時にポーリングを確実に停止
   useEffect(() => {
     return () => stopPolling();
   }, [stopPolling]);
 
   const reset = useCallback(() => {
     stopPolling();
+    pendingParamsRef.current = null;
     setState({
       status: "idle",
       taskId: null,
@@ -263,12 +316,16 @@ export function useVideoGeneration() {
       videoUrl: null,
       error: null,
       upgradeRequired: false,
+      requiresConfirmation: false,
+      extraCharge: null,
     });
   }, [stopPolling]);
 
   return {
     ...state,
     generate,
+    confirmAndGenerate,
+    cancelConfirmation,
     restoreFromProject,
     reset,
   };

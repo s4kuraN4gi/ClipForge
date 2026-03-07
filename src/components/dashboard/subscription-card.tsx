@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { PortalButton } from "./portal-button";
-import { PRICING_PLANS } from "@/lib/constants";
+import { PRO_INCLUDED_VIDEOS, PRO_EXTRA_PRICE } from "@/lib/constants";
 import type { Subscription } from "@/types";
 
 interface SubscriptionInfo {
@@ -40,18 +40,26 @@ export function SubscriptionCard() {
   }
 
   const subscription = info?.subscription;
-  const plan = PRICING_PLANS.find((p) => p.id === (subscription?.plan ?? "free"));
-  const videoLimit = plan?.videoLimit;
+  const plan = subscription?.plan ?? "free";
   const currentCount = subscription?.monthly_video_count ?? 0;
-  const progressPercent =
-    videoLimit != null ? Math.min((currentCount / videoLimit) * 100, 100) : 0;
+  const extraCount = subscription?.extra_video_count ?? 0;
+
+  const isFree = plan === "free";
+  const isPro = plan === "pro";
+
+  // Free: 累計1本、Pro: 含む分5本のプログレス
+  const includedLimit = isFree ? 1 : PRO_INCLUDED_VIDEOS;
+  const includedUsed = isPro ? Math.min(currentCount, PRO_INCLUDED_VIDEOS) : currentCount;
+  const progressPercent = Math.min((includedUsed / includedLimit) * 100, 100);
 
   return (
     <Card className="mb-6 p-4">
       <div className="flex items-center justify-between gap-4">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <h3 className="font-medium">{plan?.name ?? "無料プラン"}</h3>
+            <h3 className="font-medium">
+              {isFree ? "無料プラン" : "Pro"}
+            </h3>
             {subscription?.cancel_at_period_end && (
               <span className="rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-800">
                 期間終了で解約
@@ -59,11 +67,13 @@ export function SubscriptionCard() {
             )}
           </div>
 
-          <div className="mt-2">
+          <div className="mt-2 space-y-1.5">
+            {/* 含む分の使用量 */}
             <div className="flex items-center justify-between text-sm text-muted-foreground">
               <span>
-                今月の生成数: {currentCount}
-                {videoLimit != null ? ` / ${videoLimit}本` : "本（無制限）"}
+                {isPro
+                  ? `含む分: ${includedUsed} / ${PRO_INCLUDED_VIDEOS}本`
+                  : `生成数: ${currentCount} / 1本`}
               </span>
               {subscription?.current_period_end && (
                 <span>
@@ -75,12 +85,22 @@ export function SubscriptionCard() {
               )}
             </div>
 
-            {videoLimit != null && (
-              <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-muted">
-                <div
-                  className="h-full rounded-full bg-primary transition-all duration-500"
-                  style={{ width: `${progressPercent}%` }}
-                />
+            <div className="h-2 overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full rounded-full bg-primary transition-all duration-500"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+
+            {/* Pro: 追加生成分の表示 */}
+            {isPro && extraCount > 0 && (
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">
+                  追加生成: {extraCount}本
+                </span>
+                <span className="font-medium text-foreground">
+                  ¥{(extraCount * PRO_EXTRA_PRICE).toLocaleString()}
+                </span>
               </div>
             )}
           </div>

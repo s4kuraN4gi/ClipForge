@@ -121,6 +121,11 @@ export const TEMPLATES: Template[] = [
   },
 ];
 
+// ハイブリッド型料金定数
+export const PRO_INCLUDED_VIDEOS = 5;
+export const PRO_EXTRA_PRICE = 200;
+export const PRO_SAFETY_CAP = 50; // 暴走防止（月50本上限 = 最大追加¥9,000）
+
 export const PRICING_PLANS: PricingPlan[] = [
   {
     id: "free",
@@ -133,36 +138,25 @@ export const PRICING_PLANS: PricingPlan[] = [
       "アカウント登録で利用可能",
     ],
     videoLimit: 1,
+    includedVideos: 1,
+    extraPricePerVideo: null,
   },
   {
-    id: "starter",
-    name: "スターター",
-    price: 1980,
-    priceLabel: "¥1,980/月",
+    id: "pro",
+    name: "Pro",
+    price: 980,
+    priceLabel: "¥980/月",
     features: [
-      "月15本まで生成",
+      "毎月5本まで追加料金なし",
+      "追加は1本¥200（月末まとめ請求）",
       "透かしなし",
       "1080p画質",
       "12種類のテンプレート",
-      "BGM自動選択",
     ],
-    videoLimit: 15,
+    videoLimit: null, // 従量課金のため上限なし（safety capは別管理）
+    includedVideos: 5,
+    extraPricePerVideo: 200,
     highlighted: true,
-  },
-  {
-    id: "business",
-    name: "ビジネス",
-    price: 4980,
-    priceLabel: "¥4,980/月",
-    features: [
-      "月25本まで生成",
-      "透かしなし",
-      "1080p画質",
-      "全テンプレート",
-      "BGM自動選択",
-      "独自ブランディング",
-    ],
-    videoLimit: 25,
   },
 ];
 

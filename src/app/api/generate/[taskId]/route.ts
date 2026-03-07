@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { getTaskStatus, getVideoAllowedHosts } from "@/lib/video-provider";
-import { decrementVideoCount } from "@/lib/subscription";
+import {
+  decrementVideoCount,
+  decrementExtraVideoCount,
+  getSubscription,
+} from "@/lib/subscription";
+import { PRO_INCLUDED_VIDEOS } from "@/lib/constants";
 
 export async function GET(
   _request: NextRequest,
@@ -157,6 +162,18 @@ export async function GET(
           // 失敗時は生成カウントを戻す（1回のみ）
           if (!videoRecord.count_adjusted) {
             await decrementVideoCount(user.id);
+
+            // メーター課金分も戻す
+            const subscription = await getSubscription(user.id);
+            if (
+              subscription?.plan === "pro" &&
+              subscription.extra_video_count > 0
+            ) {
+              await decrementExtraVideoCount(user.id);
+              // Billing Meter Events は負の値をサポートしないため、
+              // DB 側のカウントのみ戻す（Stripe 側は次の請求サイクルで人手補正）
+            }
+
             updateData.count_adjusted = true;
           }
         }

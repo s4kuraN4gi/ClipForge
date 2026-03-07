@@ -1,32 +1,23 @@
 import type { PlanType } from "@/types";
 
-/** 環境変数の Price ID → プラン名 マッピング */
-const priceIdToPlan: Record<string, PlanType> = {};
-
-function ensureMapping() {
-  if (Object.keys(priceIdToPlan).length > 0) return;
-
-  const starter = process.env.STRIPE_PRICE_STARTER;
-  const business = process.env.STRIPE_PRICE_BUSINESS;
-
-  if (starter) priceIdToPlan[starter] = "starter";
-  if (business) priceIdToPlan[business] = "business";
+/** Pro プランの Price ID（base + metered） */
+export function getCheckoutPriceIds(): {
+  basePriceId: string | null;
+  meteredPriceId: string | null;
+} {
+  return {
+    basePriceId: process.env.STRIPE_PRICE_PRO_BASE || null,
+    meteredPriceId: process.env.STRIPE_PRICE_PRO_METERED || null,
+  };
 }
 
 /** Stripe Price ID からプラン名を逆引き */
 export function getPlanFromPriceId(priceId: string): PlanType {
-  ensureMapping();
-  return priceIdToPlan[priceId] || "free";
-}
+  const basePriceId = process.env.STRIPE_PRICE_PRO_BASE;
+  const meteredPriceId = process.env.STRIPE_PRICE_PRO_METERED;
 
-/** プラン名から Stripe Price ID を取得 */
-export function getPriceIdFromPlan(plan: PlanType): string | null {
-  switch (plan) {
-    case "starter":
-      return process.env.STRIPE_PRICE_STARTER || null;
-    case "business":
-      return process.env.STRIPE_PRICE_BUSINESS || null;
-    default:
-      return null;
+  if (priceId === basePriceId || priceId === meteredPriceId) {
+    return "pro";
   }
+  return "free";
 }

@@ -18,7 +18,7 @@ export type ProjectStatus = "draft" | "generating" | "completed" | "failed";
 
 export type VideoStatus = "pending" | "processing" | "completed" | "failed";
 
-export type PlanType = "free" | "starter" | "business";
+export type PlanType = "free" | "pro";
 
 export interface Project {
   id: string;
@@ -61,11 +61,13 @@ export interface Subscription {
   user_id: string;
   stripe_customer_id: string | null;
   stripe_subscription_id: string | null;
+  stripe_metered_item_id: string | null;
   plan: PlanType;
   status: string;
   current_period_start: string | null;
   current_period_end: string | null;
   monthly_video_count: number;
+  extra_video_count: number;
   cancel_at_period_end?: boolean;
   created_at: string;
   updated_at: string;
@@ -87,5 +89,7 @@ export interface PricingPlan {
   priceLabel: string;
   features: string[];
   videoLimit: number | null;
+  includedVideos: number;
+  extraPricePerVideo: number | null;
   highlighted?: boolean;
 }

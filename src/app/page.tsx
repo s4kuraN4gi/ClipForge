@@ -13,9 +13,9 @@ const jsonLd = {
   offers: {
     "@type": "AggregateOffer",
     lowPrice: "0",
-    highPrice: "4980",
+    highPrice: "980",
     priceCurrency: "JPY",
-    offerCount: "3",
+    offerCount: "2",
   },
 };
 
@@ -54,8 +54,12 @@ const FAQ_ITEMS = [
     a: "無料アカウントを作成すると、1本無料で動画を生成できます（透かし付き）。12種類のテンプレートすべてを試せます。",
   },
   {
-    q: "有料プランとの違いは？",
-    a: "有料プランでは透かしなしの動画を月15本（スターター）または月25本（ビジネス）まで生成できます。無料プランは1本のみですが、有料プランなら毎月の上限まで何度でも生成できます。",
+    q: "Proプランの料金体系は？",
+    a: "月額¥980で毎月5本まで追加料金なしで生成できます。6本目以降は1本¥200の従量課金で、月末にまとめて請求されます。使った分だけなので無駄がありません。",
+  },
+  {
+    q: "追加料金はどう請求されますか？",
+    a: "月内に5本を超えて生成した分は、1本¥200で月末のお支払い時にまとめて請求されます。生成前に必ず確認画面が表示されるので、意図しない課金は発生しません。",
   },
   {
     q: "生成した動画はどこで使えますか？",
@@ -63,7 +67,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "プランはいつでも解約できますか？",
-    a: "はい。有料プランはいつでも解約可能で、現在の請求期間の終わりまで利用できます。解約後は自動的に無料プランに戻ります。",
+    a: "はい。Proプランはいつでも解約可能で、現在の請求期間の終わりまで利用できます。解約後は自動的に無料プランに戻ります。",
   },
   {
     q: "動画生成にはどんな技術を使っていますか？",
@@ -351,9 +355,9 @@ export default function Home() {
             料金プラン
           </h2>
           <p className="mb-14 text-center text-muted-foreground">
-            まずは無料でサンプルをお試し。気に入ったらアップグレード。
+            まずは無料でサンプルをお試し。気に入ったらProへ。
           </p>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+          <div className="mx-auto grid max-w-3xl grid-cols-1 gap-6 sm:grid-cols-2">
             {PRICING_PLANS.map((plan) => (
               <div
                 key={plan.id}
@@ -403,10 +407,10 @@ export default function Home() {
                 ) : (
                   <CheckoutButton
                     plan={plan.id}
-                    variant={plan.highlighted ? "primary" : "outline"}
+                    variant="primary"
                     className="w-full rounded-full"
                   >
-                    {plan.highlighted ? "このプランで始める" : "プランを選択"}
+                    このプランで始める
                   </CheckoutButton>
                 )}
               </div>

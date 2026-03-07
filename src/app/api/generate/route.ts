@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createVideoGeneration } from "@/lib/video-provider";
-import { TEMPLATES } from "@/lib/constants";
-import { checkVideoLimit, incrementVideoCount, tryIncrementVideoCount } from "@/lib/subscription";
+import { TEMPLATES, PRO_SAFETY_CAP, PRO_EXTRA_PRICE } from "@/lib/constants";
+import {
+  checkVideoLimit,
+  incrementVideoCount,
+  tryIncrementVideoCount,
+  reportMeteredUsage,
+  incrementExtraVideoCount,
+} from "@/lib/subscription";
 import { rateLimit, getClientIp, RATE_LIMITS } from "@/lib/rate-limit";
 import type { TemplateType } from "@/types";
 
@@ -14,6 +20,7 @@ interface GenerateRequestBody {
   productName?: string;
   productPrice?: string;
   catchphrase?: string;
+  confirmExtra?: boolean;
 }
 
 export async function POST(request: NextRequest) {
@@ -76,8 +83,7 @@ export async function POST(request: NextRequest) {
       ? (body.duration ?? 5)
       : 5;
 
-    // S-9: 入力バリデーション（プロンプトインジェクション対策）
-    // C-2: バリデーションを DB 保存の前に実行
+    // 入力バリデーション
     if (body.productName && body.productName.length > 100) {
       return NextResponse.json(
         { error: "商品名は100文字以内で入力してください" },
@@ -112,16 +118,45 @@ export async function POST(request: NextRequest) {
 
     // プラン制限チェック
     const limitResult = await checkVideoLimit(user.id);
-    if (!limitResult.allowed) {
+
+    // 無料プランで上限到達
+    if (!limitResult.allowed && limitResult.plan === "free") {
       return NextResponse.json(
         {
-          error: `月間生成上限（${limitResult.limit}本）に達しました`,
+          error: "無料プランの生成上限（1本）に達しました",
           upgradeRequired: true,
           current: limitResult.current,
-          limit: limitResult.limit,
+          limit: limitResult.includedLimit,
           plan: limitResult.plan,
         },
         { status: 403 }
+      );
+    }
+
+    // Pro プランで safety cap 到達
+    if (!limitResult.allowed && limitResult.plan === "pro") {
+      return NextResponse.json(
+        {
+          error: `今月の安全上限（${PRO_SAFETY_CAP}本）に達しました。来月までお待ちください。`,
+          current: limitResult.current,
+          plan: limitResult.plan,
+        },
+        { status: 403 }
+      );
+    }
+
+    // Pro で追加料金が発生する場合 → 確認要求
+    if (limitResult.isMetered && !body.confirmExtra) {
+      return NextResponse.json(
+        {
+          requiresConfirmation: true,
+          extraCharge: PRO_EXTRA_PRICE,
+          current: limitResult.current,
+          includedLimit: limitResult.includedLimit,
+          extraCount: limitResult.extraCount,
+          plan: limitResult.plan,
+        },
+        { status: 402 }
       );
     }
 
@@ -129,7 +164,6 @@ export async function POST(request: NextRequest) {
     let projectId: string | null = null;
 
     {
-      // プロジェクト作成
       const { data: project, error: projectError } = await supabase
         .from("projects")
         .insert({
@@ -148,7 +182,6 @@ export async function POST(request: NextRequest) {
       } else if (project) {
         projectId = project.id;
 
-        // 画像レコード保存
         if (body.storagePaths && body.storagePaths.length > 0) {
           const imageRecords = body.storagePaths.map((path, index) => ({
             project_id: project.id,
@@ -170,7 +203,6 @@ export async function POST(request: NextRequest) {
     // テンプレートに基づくプロンプト生成
     let prompt = template.prompt;
     if (body.productName) {
-      // 制御文字を除去してプロンプトに結合
       const sanitized = body.productName.replace(/[\x00-\x1F\x7F]/g, "").trim();
       if (sanitized) {
         prompt += `, featuring "${sanitized}"`;
@@ -180,7 +212,7 @@ export async function POST(request: NextRequest) {
     // 無料プランは透かし付き
     const useWatermark = limitResult.plan === "free";
 
-    // 動画生成タスクを作成（最初の画像を使用）
+    // 動画生成タスクを作成
     const result = await createVideoGeneration({
       imageUrl: body.imageUrls[0],
       prompt,
@@ -190,11 +222,22 @@ export async function POST(request: NextRequest) {
       watermark: useWatermark,
     });
 
-    // S-13: アトミックにカウントをインクリメント（API成功後）
-    if (limitResult.limit !== null) {
-      await tryIncrementVideoCount(user.id, limitResult.limit);
+    // カウントをインクリメント
+    if (limitResult.plan === "free") {
+      await tryIncrementVideoCount(user.id, 1);
     } else {
       await incrementVideoCount(user.id);
+    }
+
+    // メーター課金の場合: Stripe に usage 報告 + extra_video_count インクリメント
+    if (limitResult.isMetered && limitResult.stripeCustomerId) {
+      try {
+        await reportMeteredUsage(limitResult.stripeCustomerId, 1);
+        await incrementExtraVideoCount(user.id);
+      } catch (err) {
+        console.error("Metered usage report error:", err);
+        // usage報告失敗でも生成は続行（次の請求サイクルで補正可能）
+      }
     }
 
     // DB に生成動画レコードを作成

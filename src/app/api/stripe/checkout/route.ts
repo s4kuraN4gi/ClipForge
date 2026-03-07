@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getStripe } from "@/lib/stripe/client";
-import { getPriceIdFromPlan } from "@/lib/stripe/config";
+import { getCheckoutPriceIds } from "@/lib/stripe/config";
 import { getSubscription } from "@/lib/subscription";
 import { rateLimit, getClientIp, RATE_LIMITS } from "@/lib/rate-limit";
 import type { PlanType } from "@/types";
@@ -28,19 +28,28 @@ export async function POST(request: NextRequest) {
     }
 
     const { plan } = (await request.json()) as { plan: PlanType };
-    const priceId = getPriceIdFromPlan(plan);
 
-    if (!priceId) {
+    if (plan !== "pro") {
       return NextResponse.json(
         { error: "無効なプランです" },
         { status: 400 }
       );
     }
 
+    const { basePriceId, meteredPriceId } = getCheckoutPriceIds();
+
+    if (!basePriceId || !meteredPriceId) {
+      console.error("Missing Stripe price IDs for Pro plan");
+      return NextResponse.json(
+        { error: "プランの設定に問題があります" },
+        { status: 500 }
+      );
+    }
+
     // 既存の Stripe Customer ID を取得
     const subscription = await getSubscription(user.id);
 
-    // 二重課金防止: 既にアクティブな有料サブスクリプションがある場合はブロック
+    // 二重課金防止
     if (
       subscription?.stripe_subscription_id &&
       subscription.status === "active" &&
@@ -53,6 +62,7 @@ export async function POST(request: NextRequest) {
         { status: 409 }
       );
     }
+
     const customerOptions: { customer?: string; customer_email?: string } = {};
 
     if (subscription?.stripe_customer_id) {
@@ -75,11 +85,14 @@ export async function POST(request: NextRequest) {
 
     const session = await getStripe().checkout.sessions.create({
       mode: "subscription",
-      line_items: [{ price: priceId, quantity: 1 }],
+      line_items: [
+        { price: basePriceId, quantity: 1 },
+        { price: meteredPriceId },
+      ],
       ...customerOptions,
       metadata: {
         user_id: user.id,
-        plan,
+        plan: "pro",
       },
       success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/checkout/cancel`,

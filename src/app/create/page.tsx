@@ -54,6 +54,8 @@ export default function CreatePage() {
   const videoUrl = isSampleMode ? sampleGen.videoUrl : realGen.videoUrl;
   const error = isSampleMode ? null : realGen.error;
   const upgradeRequired = isSampleMode ? false : realGen.upgradeRequired;
+  const requiresConfirmation = isSampleMode ? false : realGen.requiresConfirmation;
+  const extraCharge = isSampleMode ? null : realGen.extraCharge;
 
   const handleGenerate = useCallback(
     async (formData: {
@@ -436,6 +438,37 @@ export default function CreatePage() {
                     className="w-full"
                   >
                     新しい動画を作成
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* 追加料金確認ダイアログ */}
+            {requiresConfirmation && (
+              <div className="animate-fade-in space-y-4 py-8 text-center">
+                <div className="text-4xl">💰</div>
+                <h2 className="text-lg font-medium">追加料金が発生します</h2>
+                <p className="text-sm text-muted-foreground">
+                  今月の含む分（5本）を使い切りました。
+                  <br />
+                  この動画の生成には追加料金 <span className="font-bold text-foreground">¥{extraCharge}</span> がかかります。
+                  <br />
+                  <span className="text-xs">（月末にまとめて請求されます）</span>
+                </p>
+                <div className="flex flex-col gap-3">
+                  <Button
+                    size="lg"
+                    className="w-full"
+                    onClick={() => realGen.confirmAndGenerate()}
+                  >
+                    ¥{extraCharge} で生成する
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => realGen.cancelConfirmation()}
+                  >
+                    キャンセル
                   </Button>
                 </div>
               </div>
