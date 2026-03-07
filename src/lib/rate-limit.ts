@@ -124,19 +124,27 @@ export async function rateLimit(
   };
 }
 
-/** IP アドレスを取得するヘルパー（Vercel の x-forwarded-for は信頼可能） */
+/** IP アドレスを取得するヘルパー（Cloudflare / nginx / Vercel 対応） */
 export function getClientIp(request: Request): string {
-  // Vercel は x-forwarded-for の末尾にクライアント IP を付加するため最後の値を使用
+  // 1. Cloudflare が設定する実クライアント IP（最優先）
+  const cfIp = request.headers.get("cf-connecting-ip");
+  if (cfIp) {
+    return cfIp.trim();
+  }
+
+  // 2. x-forwarded-for（先頭がクライアント IP — Cloudflare/nginx 標準）
   const forwarded = request.headers.get("x-forwarded-for");
   if (forwarded) {
-    const parts = forwarded.split(",").map((s) => s.trim());
-    // Vercel 環境: 最後の値がクライアント IP
-    return parts[parts.length - 1];
+    const first = forwarded.split(",")[0].trim();
+    if (first) return first;
   }
+
+  // 3. x-real-ip（nginx proxy_set_header で設定される場合）
   const realIp = request.headers.get("x-real-ip");
   if (realIp) {
-    return realIp;
+    return realIp.trim();
   }
+
   return "unknown";
 }
 

@@ -1,0 +1,14 @@
+node_modules
+.next
+.git
+.gitignore
+.env
+.env.local
+.env.*.local
+.vercel
+.DS_Store
+*.md
+docs
+scripts
+*.csv
+*.swp

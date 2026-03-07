@@ -1,0 +1,26 @@
+services:
+  picavel-web:
+    image: ghcr.io/s4kuranagi/picavel:latest
+    container_name: picavel-web
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - HOSTNAME=0.0.0.0
+    expose:
+      - "3000"
+    networks:
+      - picavel
+      - proxy
+    deploy:
+      resources:
+        limits:
+          memory: 1024M
+
+networks:
+  picavel:
+    driver: bridge
+  proxy:
+    external: true
