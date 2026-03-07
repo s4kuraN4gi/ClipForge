@@ -92,15 +92,25 @@ export function SubscriptionCard() {
               />
             </div>
 
-            {/* Pro: 追加生成分の表示 */}
-            {isPro && extraCount > 0 && (
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">
-                  追加生成: {extraCount}本
-                </span>
-                <span className="font-medium text-foreground">
-                  ¥{(extraCount * PRO_EXTRA_PRICE).toLocaleString()}
-                </span>
+            {/* Pro: 追加生成分 + 請求予定額 */}
+            {isPro && (
+              <div className="space-y-1">
+                {extraCount > 0 && (
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">
+                      追加生成: {extraCount}本
+                    </span>
+                    <span className="font-medium text-foreground">
+                      ¥{(extraCount * PRO_EXTRA_PRICE).toLocaleString()}
+                    </span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">今月の請求予定</span>
+                  <span className="font-semibold text-foreground">
+                    ¥{(980 + extraCount * PRO_EXTRA_PRICE).toLocaleString()}
+                  </span>
+                </div>
               </div>
             )}
           </div>

@@ -168,7 +168,7 @@ export const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png"];
 // 動画尺オプション
 export const DURATION_OPTIONS = [
   { value: 5, label: "5秒" },
-  { value: 15, label: "15秒" },
+  { value: 10, label: "10秒" },
 ] as const;
 export const DEFAULT_DURATION = 5;
 export const VIDEO_DURATION_SECONDS = 5;

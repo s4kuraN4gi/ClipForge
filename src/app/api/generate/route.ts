@@ -78,8 +78,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // duration バリデーション（5秒 or 15秒、デフォルト5）
-    const ALLOWED_DURATIONS = [5, 15];
+    // duration バリデーション（5秒 or 10秒、デフォルト5）
+    const ALLOWED_DURATIONS = [5, 10];
     const requestedDuration = ALLOWED_DURATIONS.includes(body.duration ?? 5)
       ? (body.duration ?? 5)
       : 5;

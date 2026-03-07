@@ -215,3 +215,32 @@ docker stats --no-stream
 ```
 
 4GB インスタンスで他アプリと同居の場合、Picavel は 1GB 制限で設定済み。
+
+---
+
+## 6. Supabase Free プラン停止防止（crontab）
+
+Supabase Free プランは **7日間無操作で DB が自動停止** される。
+Lightsail の crontab でヘルスチェックを設定して防止する。
+
+### 設定手順
+
+```bash
+# crontab 編集
+crontab -e
+
+# 以下を追記（5分おきにヘルスチェック）
+*/5 * * * * curl -sf "https://cjwlqjonquevxpgieasl.supabase.co/rest/v1/" -H "apikey: SUPABASE_ANON_KEY_HERE" -H "Authorization: Bearer SUPABASE_ANON_KEY_HERE" > /dev/null 2>&1
+```
+
+> `SUPABASE_ANON_KEY_HERE` を実際の anon key に置き換えてください。
+
+### 確認
+
+```bash
+# crontab が登録されたか確認
+crontab -l
+
+# 手動で実行してみる（200が返ればOK）
+curl -sf -o /dev/null -w "%{http_code}" "https://cjwlqjonquevxpgieasl.supabase.co/rest/v1/" -H "apikey: SUPABASE_ANON_KEY_HERE" -H "Authorization: Bearer SUPABASE_ANON_KEY_HERE"
+```

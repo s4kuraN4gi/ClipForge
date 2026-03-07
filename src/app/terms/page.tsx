@@ -9,7 +9,7 @@ export default function TermsPage() {
     <div className="mx-auto max-w-3xl px-4 py-16">
       <h1 className="mb-2 text-2xl font-bold">利用規約</h1>
       <p className="mb-8 text-sm text-muted-foreground">
-        最終更新日: 2026年2月24日
+        最終更新日: 2026年3月8日
       </p>
 
       <div className="space-y-8 text-sm leading-relaxed text-foreground/90">

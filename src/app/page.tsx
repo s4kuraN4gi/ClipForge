@@ -323,20 +323,20 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 技術・信頼性 */}
+      {/* 信頼性・安心 */}
       <section className="border-t border-border bg-muted/50 px-4 py-14">
         <div className="mx-auto max-w-3xl text-center">
           <p className="mb-6 text-sm text-muted-foreground">
-            最新の AI 技術と信頼性の高いインフラで構築
+            安心してご利用いただくために
           </p>
           <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm font-medium text-muted-foreground">
-            <span>WaveSpeed AI (Wan 2.1)</span>
+            <span>SSL暗号化通信</span>
             <span className="hidden text-border sm:inline" aria-hidden="true">|</span>
-            <span>Supabase</span>
+            <span>安全なカード決済</span>
             <span className="hidden text-border sm:inline" aria-hidden="true">|</span>
-            <span>Stripe</span>
+            <span>いつでも解約可能</span>
             <span className="hidden text-border sm:inline" aria-hidden="true">|</span>
-            <span>Vercel</span>
+            <span>データ保護対策済み</span>
           </div>
         </div>
       </section>
