@@ -71,7 +71,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "動画生成にはどんな技術を使っていますか？",
-    a: "ByteDance の AI 動画生成モデル「Seedance」を採用しています。静止画から自然な動きのある動画を生成する最先端の技術です。",
+    a: "WaveSpeed AI の動画生成モデル「Wan 2.1」を採用しています。静止画から自然な動きのある動画を生成する最先端の技術です。",
   },
 ];
 
@@ -330,7 +330,7 @@ export default function Home() {
             最新の AI 技術と信頼性の高いインフラで構築
           </p>
           <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm font-medium text-muted-foreground">
-            <span>Seedance (ByteDance)</span>
+            <span>WaveSpeed AI (Wan 2.1)</span>
             <span className="hidden text-border sm:inline" aria-hidden="true">|</span>
             <span>Supabase</span>
             <span className="hidden text-border sm:inline" aria-hidden="true">|</span>

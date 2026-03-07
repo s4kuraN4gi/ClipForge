@@ -56,6 +56,7 @@ export default function CreatePage() {
   const upgradeRequired = isSampleMode ? false : realGen.upgradeRequired;
   const requiresConfirmation = isSampleMode ? false : realGen.requiresConfirmation;
   const extraCharge = isSampleMode ? null : realGen.extraCharge;
+  const extraCount = isSampleMode ? 0 : realGen.extraCount;
 
   const handleGenerate = useCallback(
     async (formData: {
@@ -452,8 +453,14 @@ export default function CreatePage() {
                   今月の含む分（5本）を使い切りました。
                   <br />
                   この動画の生成には追加料金 <span className="font-bold text-foreground">¥{extraCharge}</span> がかかります。
-                  <br />
-                  <span className="text-xs">（月末にまとめて請求されます）</span>
+                </p>
+                {extraCount > 0 && extraCharge && (
+                  <p className="text-xs text-muted-foreground">
+                    今月の追加生成: {extraCount}本（累計 ¥{extraCount * extraCharge}）→ 生成後: {extraCount + 1}本（累計 ¥{(extraCount + 1) * extraCharge}）
+                  </p>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  月末にまとめて請求されます
                 </p>
                 <div className="flex flex-col gap-3">
                   <Button

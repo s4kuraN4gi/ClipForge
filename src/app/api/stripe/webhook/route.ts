@@ -40,15 +40,17 @@ export async function POST(request: NextRequest) {
 
   const supabase = createServiceClient();
 
-  // べき等性チェック
-  const { data: existing } = await supabase
+  // べき等性チェック（INSERT で競合回避）
+  const { error: idempotencyError } = await supabase
     .from("processed_webhook_events")
-    .select("event_id")
-    .eq("event_id", event.id)
-    .single();
+    .insert({ event_id: event.id, event_type: event.type });
 
-  if (existing) {
-    return NextResponse.json({ received: true, deduplicated: true });
+  if (idempotencyError) {
+    // unique 制約違反 = 既に処理済み
+    if (idempotencyError.code === "23505") {
+      return NextResponse.json({ received: true, deduplicated: true });
+    }
+    console.error("Idempotency check error:", idempotencyError);
   }
 
   try {
@@ -190,7 +192,7 @@ export async function POST(request: NextRequest) {
           // 月次リセット
           const { error: resetError } = await supabase
             .from("subscriptions")
-            .update({ monthly_video_count: 0, extra_video_count: 0 })
+            .update({ monthly_video_count: 0, extra_video_count: 0, metered_report_pending: 0 })
             .eq("stripe_subscription_id", subscriptionId);
 
           if (resetError) {
@@ -235,12 +237,6 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-
-  // 処理済みイベントを記録
-  await supabase.from("processed_webhook_events").insert({
-    event_id: event.id,
-    event_type: event.type,
-  });
 
   // 古いイベントを定期クリーンアップ（約1%の確率で実行）
   if (Math.random() < 0.01) {

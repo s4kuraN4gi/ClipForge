@@ -15,6 +15,7 @@ interface GenerationState {
   upgradeRequired: boolean;
   requiresConfirmation: boolean;
   extraCharge: number | null;
+  extraCount: number;
 }
 
 interface GenerateParams {
@@ -28,18 +29,21 @@ interface GenerateParams {
   confirmExtra?: boolean;
 }
 
+const INITIAL_STATE: GenerationState = {
+  status: "idle",
+  taskId: null,
+  projectId: null,
+  progress: 0,
+  videoUrl: null,
+  error: null,
+  upgradeRequired: false,
+  requiresConfirmation: false,
+  extraCharge: null,
+  extraCount: 0,
+};
+
 export function useVideoGeneration() {
-  const [state, setState] = useState<GenerationState>({
-    status: "idle",
-    taskId: null,
-    projectId: null,
-    progress: 0,
-    videoUrl: null,
-    error: null,
-    upgradeRequired: false,
-    requiresConfirmation: false,
-    extraCharge: null,
-  });
+  const [state, setState] = useState<GenerationState>(INITIAL_STATE);
 
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const progressRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -126,15 +130,8 @@ export function useVideoGeneration() {
   const generate = useCallback(
     async (params: GenerateParams) => {
       setState({
+        ...INITIAL_STATE,
         status: "generating",
-        taskId: null,
-        projectId: null,
-        progress: 0,
-        videoUrl: null,
-        error: null,
-        upgradeRequired: false,
-        requiresConfirmation: false,
-        extraCharge: null,
       });
 
       try {
@@ -149,15 +146,10 @@ export function useVideoGeneration() {
         if (!response.ok) {
           if (response.status === 403 && data.upgradeRequired) {
             setState({
+              ...INITIAL_STATE,
               status: "failed",
-              taskId: null,
-              projectId: null,
-              progress: 0,
-              videoUrl: null,
               error: data.error || "月間生成上限に達しました",
               upgradeRequired: true,
-              requiresConfirmation: false,
-              extraCharge: null,
             });
             return;
           }
@@ -166,15 +158,10 @@ export function useVideoGeneration() {
           if (response.status === 402 && data.requiresConfirmation) {
             pendingParamsRef.current = params;
             setState({
-              status: "idle",
-              taskId: null,
-              projectId: null,
-              progress: 0,
-              videoUrl: null,
-              error: null,
-              upgradeRequired: false,
+              ...INITIAL_STATE,
               requiresConfirmation: true,
               extraCharge: data.extraCharge,
+              extraCount: data.extraCount ?? 0,
             });
             return;
           }
@@ -192,18 +179,12 @@ export function useVideoGeneration() {
         pollStatus(data.taskId);
       } catch (error) {
         setState({
+          ...INITIAL_STATE,
           status: "failed",
-          taskId: null,
-          projectId: null,
-          progress: 0,
-          videoUrl: null,
           error:
             error instanceof Error
               ? error.message
               : "エラーが発生しました",
-          upgradeRequired: false,
-          requiresConfirmation: false,
-          extraCharge: null,
         });
       }
     },
@@ -221,17 +202,7 @@ export function useVideoGeneration() {
   /** 確認をキャンセル */
   const cancelConfirmation = useCallback(() => {
     pendingParamsRef.current = null;
-    setState({
-      status: "idle",
-      taskId: null,
-      projectId: null,
-      progress: 0,
-      videoUrl: null,
-      error: null,
-      upgradeRequired: false,
-      requiresConfirmation: false,
-      extraCharge: null,
-    });
+    setState(INITIAL_STATE);
   }, []);
 
   const restoreFromProject = useCallback(
@@ -249,30 +220,22 @@ export function useVideoGeneration() {
 
         if (project.status === "completed" && video?.video_url) {
           setState({
+            ...INITIAL_STATE,
             status: "completed",
             taskId: video.task_id,
             projectId: project.id,
             progress: 100,
             videoUrl: video.video_url,
-            error: null,
-            upgradeRequired: false,
-            requiresConfirmation: false,
-            extraCharge: null,
           });
           return true;
         }
 
         if (project.status === "generating" && video?.task_id) {
           setState({
+            ...INITIAL_STATE,
             status: "generating",
             taskId: video.task_id,
             projectId: project.id,
-            progress: 0,
-            videoUrl: null,
-            error: null,
-            upgradeRequired: false,
-            requiresConfirmation: false,
-            extraCharge: null,
           });
           pollStatus(video.task_id);
           return true;
@@ -280,15 +243,11 @@ export function useVideoGeneration() {
 
         if (project.status === "failed") {
           setState({
+            ...INITIAL_STATE,
             status: "failed",
             taskId: video?.task_id || null,
             projectId: project.id,
-            progress: 0,
-            videoUrl: null,
             error: video?.error_message || "動画生成に失敗しました",
-            upgradeRequired: false,
-            requiresConfirmation: false,
-            extraCharge: null,
           });
           return true;
         }
@@ -308,17 +267,7 @@ export function useVideoGeneration() {
   const reset = useCallback(() => {
     stopPolling();
     pendingParamsRef.current = null;
-    setState({
-      status: "idle",
-      taskId: null,
-      projectId: null,
-      progress: 0,
-      videoUrl: null,
-      error: null,
-      upgradeRequired: false,
-      requiresConfirmation: false,
-      extraCharge: null,
-    });
+    setState(INITIAL_STATE);
   }, [stopPolling]);
 
   return {

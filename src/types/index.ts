@@ -68,6 +68,7 @@ export interface Subscription {
   current_period_end: string | null;
   monthly_video_count: number;
   extra_video_count: number;
+  metered_report_pending: number;
   cancel_at_period_end?: boolean;
   created_at: string;
   updated_at: string;

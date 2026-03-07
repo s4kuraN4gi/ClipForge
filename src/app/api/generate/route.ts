@@ -4,10 +4,11 @@ import { createVideoGeneration } from "@/lib/video-provider";
 import { TEMPLATES, PRO_SAFETY_CAP, PRO_EXTRA_PRICE } from "@/lib/constants";
 import {
   checkVideoLimit,
-  incrementVideoCount,
   tryIncrementVideoCount,
+  tryIncrementVideoCountPro,
   reportMeteredUsage,
   incrementExtraVideoCount,
+  incrementMeteredPending,
 } from "@/lib/subscription";
 import { rateLimit, getClientIp, RATE_LIMITS } from "@/lib/rate-limit";
 import type { TemplateType } from "@/types";
@@ -183,7 +184,11 @@ export async function POST(request: NextRequest) {
         projectId = project.id;
 
         if (body.storagePaths && body.storagePaths.length > 0) {
-          const imageRecords = body.storagePaths.map((path, index) => ({
+          // storagePaths が自ユーザーのパスであることを検証
+          const validPaths = body.storagePaths.filter(
+            (path) => path.startsWith(`${user.id}/`) && !path.includes("..")
+          );
+          const imageRecords = validPaths.map((path, index) => ({
             project_id: project.id,
             storage_path: path,
             display_order: index,
@@ -222,21 +227,34 @@ export async function POST(request: NextRequest) {
       watermark: useWatermark,
     });
 
-    // カウントをインクリメント
+    // カウントをアトミックにインクリメント
     if (limitResult.plan === "free") {
-      await tryIncrementVideoCount(user.id, 1);
+      const ok = await tryIncrementVideoCount(user.id, 1);
+      if (!ok) {
+        return NextResponse.json(
+          { error: "無料プランの生成上限に達しました", upgradeRequired: true },
+          { status: 403 }
+        );
+      }
     } else {
-      await incrementVideoCount(user.id);
+      const ok = await tryIncrementVideoCountPro(user.id, PRO_SAFETY_CAP);
+      if (!ok) {
+        return NextResponse.json(
+          { error: `今月の安全上限（${PRO_SAFETY_CAP}本）に達しました。` },
+          { status: 403 }
+        );
+      }
     }
 
     // メーター課金の場合: Stripe に usage 報告 + extra_video_count インクリメント
     if (limitResult.isMetered && limitResult.stripeCustomerId) {
+      await incrementExtraVideoCount(user.id);
       try {
         await reportMeteredUsage(limitResult.stripeCustomerId, 1);
-        await incrementExtraVideoCount(user.id);
       } catch (err) {
         console.error("Metered usage report error:", err);
-        // usage報告失敗でも生成は続行（次の請求サイクルで補正可能）
+        // Stripe 報告失敗 → DB に未報告フラグを立てる（後でリトライ可能）
+        await incrementMeteredPending(user.id);
       }
     }
 

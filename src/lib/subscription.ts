@@ -37,6 +37,19 @@ export async function checkVideoLimit(userId: string): Promise<VideoLimitResult>
   const extraCount = subscription?.extra_video_count ?? 0;
   const stripeCustomerId = subscription?.stripe_customer_id ?? null;
 
+  // サブスクリプションが active でない場合はブロック（past_due 等）
+  if (subscription && subscription.plan !== "free" && subscription.status !== "active") {
+    return {
+      allowed: false,
+      plan,
+      current,
+      includedLimit: PRO_INCLUDED_VIDEOS,
+      extraCount,
+      isMetered: false,
+      stripeCustomerId,
+    };
+  }
+
   if (plan === "free") {
     // 無料プラン: 累計（lifetime）制限
     const supabase = createServiceClient();
@@ -157,6 +170,23 @@ export async function tryIncrementVideoCount(
   return data === true;
 }
 
+/** Pro プランの safety cap 付きアトミックインクリメント */
+export async function tryIncrementVideoCountPro(
+  userId: string,
+  safetyCap: number
+): Promise<boolean> {
+  const supabase = createServiceClient();
+  const { data, error } = await supabase.rpc("try_increment_video_count_pro", {
+    target_user_id: userId,
+    safety_cap: safetyCap,
+  });
+  if (error) {
+    console.error("try_increment_video_count_pro error:", error);
+    return false;
+  }
+  return data === true;
+}
+
 /** 動画生成カウントをデクリメント（PostgreSQL RPC） */
 export async function decrementVideoCount(userId: string): Promise<void> {
   const supabase = createServiceClient();
@@ -173,6 +203,18 @@ export async function incrementExtraVideoCount(userId: string): Promise<void> {
 export async function decrementExtraVideoCount(userId: string): Promise<void> {
   const supabase = createServiceClient();
   await supabase.rpc("decrement_extra_video_count", { target_user_id: userId });
+}
+
+/** メーター未報告分をインクリメント */
+export async function incrementMeteredPending(userId: string): Promise<void> {
+  const supabase = createServiceClient();
+  await supabase.rpc("increment_metered_pending", { target_user_id: userId });
+}
+
+/** メーター未報告分をクリア */
+export async function clearMeteredPending(userId: string): Promise<void> {
+  const supabase = createServiceClient();
+  await supabase.rpc("clear_metered_pending", { target_user_id: userId });
 }
 
 /** 無料プラン サブスクリプションを作成（冪等・アトミック） */
