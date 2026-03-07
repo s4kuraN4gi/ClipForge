@@ -16,7 +16,7 @@ export default function PrivacyPage() {
         <section>
           <h2 className="mb-3 text-base font-semibold">1. はじめに</h2>
           <p>
-            ClipForge（以下「本サービス」）は、ユーザーのプライバシーを尊重し、
+            Picavel（以下「本サービス」）は、ユーザーのプライバシーを尊重し、
             個人情報の保護に努めます。本ポリシーでは、収集する情報の種類、
             利用目的、管理方法について説明します。
           </p>
@@ -86,7 +86,7 @@ export default function PrivacyPage() {
               <ul className="ml-4 mt-1 list-inside list-disc space-y-1">
                 <li>Supabase（認証・データベース・ストレージ）</li>
                 <li>Stripe（決済処理）</li>
-                <li>BytePlus / Seedance（AI動画生成）</li>
+                <li>WaveSpeed AI（AI動画生成）</li>
                 <li>Vercel（ホスティング）</li>
               </ul>
             </li>
@@ -150,7 +150,7 @@ export default function PrivacyPage() {
           <p>
             プライバシーに関するお問い合わせは、以下までご連絡ください。
             <br />
-            メールアドレス: support@clipforge.app
+            メールアドレス: support@picavel.com
           </p>
         </section>
       </div>

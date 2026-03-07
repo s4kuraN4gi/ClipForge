@@ -19,33 +19,33 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "ClipForge - 商品写真からショート動画を自動生成",
-    template: "%s | ClipForge",
+    default: "Picavel - 商品写真からショート動画を自動生成",
+    template: "%s | Picavel",
   },
   description:
     "商品写真をアップロードするだけで、TikTok・Reels・Shorts向けのプロ品質なショート動画を自動生成。個人セラー・ハンドメイド作家のための動画マーケティングツール。",
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL || "https://clipforge.app"
+    process.env.NEXT_PUBLIC_SITE_URL || "https://picavel.com"
   ),
   openGraph: {
-    title: "ClipForge - 商品写真からショート動画を自動生成",
+    title: "Picavel - 商品写真からショート動画を自動生成",
     description:
       "写真を選んで、テンプレートを選ぶだけ。AIがプロ品質のショート動画を自動生成します。",
     type: "website",
-    siteName: "ClipForge",
+    siteName: "Picavel",
     locale: "ja_JP",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "ClipForge - 商品写真からショート動画を自動生成",
+        alt: "Picavel - 商品写真からショート動画を自動生成",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "ClipForge - 商品写真からショート動画を自動生成",
+    title: "Picavel - 商品写真からショート動画を自動生成",
     description:
       "写真を選んで、テンプレートを選ぶだけ。AIがプロ品質のショート動画を自動生成します。",
     images: ["/og-image.png"],

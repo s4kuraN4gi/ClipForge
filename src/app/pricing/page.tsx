@@ -6,11 +6,11 @@ import { CheckoutButton } from "@/components/pricing/checkout-button";
 export const metadata: Metadata = {
   title: "料金プラン",
   description:
-    "ClipForgeの料金プラン。無料でサンプル体験できます。Proプランは月額¥980＋使った分だけの従量課金。",
+    "Picavelの料金プラン。無料でサンプル体験できます。Proプランは月額¥980＋使った分だけの従量課金。",
   openGraph: {
-    title: "料金プラン | ClipForge",
+    title: "料金プラン | Picavel",
     description:
-      "ClipForgeの料金プラン。無料でサンプル体験できます。Proプランは月額¥980＋使った分だけの従量課金。",
+      "Picavelの料金プラン。無料でサンプル体験できます。Proプランは月額¥980＋使った分だけの従量課金。",
   },
 };
 

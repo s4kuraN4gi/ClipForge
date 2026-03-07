@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   description:
     "商品写真をアップロードしてテンプレートを選ぶだけ。AIが自動でショート動画を生成します。",
   openGraph: {
-    title: "動画を作成 | ClipForge",
+    title: "動画を作成 | Picavel",
     description:
       "商品写真をアップロードしてテンプレートを選ぶだけ。AIが自動でショート動画を生成します。",
   },

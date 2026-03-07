@@ -16,7 +16,7 @@ export default function TermsPage() {
         <section>
           <h2 className="mb-3 text-base font-semibold">第1条（適用）</h2>
           <p>
-            本規約は、ClipForge（以下「本サービス」）の利用に関する条件を定めるものです。
+            本規約は、Picavel（以下「本サービス」）の利用に関する条件を定めるものです。
             ユーザーは本サービスを利用することにより、本規約に同意したものとみなします。
           </p>
         </section>

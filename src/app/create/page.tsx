@@ -414,7 +414,7 @@ export default function CreatePage() {
                         const blobUrl = URL.createObjectURL(blob);
                         const a = document.createElement("a");
                         a.href = blobUrl;
-                        a.download = "clipforge-video.mp4";
+                        a.download = "picavel-video.mp4";
                         a.click();
                         URL.revokeObjectURL(blobUrl);
                         addToast({ type: "success", title: "ダウンロードを開始しました" });

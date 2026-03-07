@@ -95,7 +95,7 @@ export default function LoginPage() {
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
             {mode === "login"
-              ? "ClipForge にログインして動画を作成しましょう"
+              ? "Picavel にログインして動画を作成しましょう"
               : "無料アカウントを作成して始めましょう"}
           </p>
         </div>

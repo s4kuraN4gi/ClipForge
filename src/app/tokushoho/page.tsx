@@ -32,7 +32,7 @@ export default function TokushohoPage() {
         <section>
           <h2 className="mb-3 text-base font-semibold">連絡先</h2>
           <p>
-            メールアドレス: support@clipforge.app
+            メールアドレス: support@picavel.com
             <br />
             ※お問い合わせはメールにてお願いいたします。
           </p>

@@ -5,7 +5,7 @@ import { CheckoutButton } from "@/components/pricing/checkout-button";
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
-  name: "ClipForge",
+  name: "Picavel",
   applicationCategory: "MultimediaApplication",
   operatingSystem: "Web",
   description:

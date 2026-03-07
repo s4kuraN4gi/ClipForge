@@ -52,9 +52,9 @@ export function Header() {
           <Link
             href="/"
             className="flex items-center gap-2"
-            aria-label="ClipForge ホーム"
+            aria-label="Picavel ホーム"
           >
-            <span className="text-xl font-bold tracking-tight text-primary">ClipForge</span>
+            <span className="text-xl font-bold tracking-tight text-primary">Picavel</span>
           </Link>
 
           {/* デスクトップナビ */}

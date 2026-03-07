@@ -11,7 +11,7 @@ interface DownloadButtonProps {
 
 export function DownloadButton({
   videoUrl,
-  filename = "clipforge-video.mp4",
+  filename = "picavel-video.mp4",
 }: DownloadButtonProps) {
   const [downloading, setDownloading] = useState(false);
   const { addToast } = useToast();
