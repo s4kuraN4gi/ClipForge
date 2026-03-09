@@ -1,6 +1,6 @@
 services:
   picavel-web:
-    image: ghcr.io/s4kuranagi/clipforge:latest
+    image: ghcr.io/s4kuran4gi/clipforge:latest
     container_name: picavel-web
     restart: unless-stopped
     env_file:

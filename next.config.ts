@@ -5,7 +5,7 @@ import { withSentryConfig } from "@sentry/nextjs";
 // Supabase / Stripe / BytePlus / Sentry の外部ドメインを許可
 const cspDirectives = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' https://js.stripe.com",
+  "script-src 'self' 'unsafe-inline' https://js.stripe.com https://static.cloudflareinsights.com",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com",
   "img-src 'self' data: blob: https://*.supabase.co",
