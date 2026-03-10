@@ -14,8 +14,6 @@ export async function GET(request: NextRequest) {
     ? `${forwardedProto}://${forwardedHost}`
     : (process.env.NEXT_PUBLIC_SITE_URL || new URL(request.url).origin);
 
-  console.log("[auth/callback] origin:", origin, "code:", code ? "present" : "missing");
-
   // オープンリダイレクト対策: 相対パスのみ許可
   const rawNext = searchParams.get("next") ?? "/create";
   const next =
@@ -28,11 +26,7 @@ export async function GET(request: NextRequest) {
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
       const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-      console.log("[auth/callback] supabaseUrl:", supabaseUrl ? "set" : "MISSING");
-      console.log("[auth/callback] supabaseAnonKey:", supabaseAnonKey ? "set" : "MISSING");
-
       if (!supabaseUrl || !supabaseAnonKey) {
-        console.error("[auth/callback] Missing env vars, redirecting to /login?error=config");
         return NextResponse.redirect(`${origin}/login?error=config`);
       }
 
@@ -50,22 +44,20 @@ export async function GET(request: NextRequest) {
         },
       });
 
-      console.log("[auth/callback] Exchanging code for session...");
       const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
       if (error) {
-        console.error("[auth/callback] exchangeCodeForSession error:", error.message);
+        console.error("Auth callback error:", error.message);
         return NextResponse.redirect(`${origin}/login?error=auth`);
       }
 
       if (data.user) {
-        console.log("[auth/callback] User authenticated:", data.user.id);
         await ensureFreeSubscription(data.user.id);
         return response;
       }
     }
   } catch (err) {
-    console.error("[auth/callback] Unexpected error:", err);
+    console.error("Auth callback error:", err);
     return NextResponse.redirect(`${origin}/login?error=auth`);
   }
 
