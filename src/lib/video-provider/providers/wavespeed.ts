@@ -51,9 +51,23 @@ export class WaveSpeedProvider implements VideoProvider {
   async createGeneration(
     params: VideoGenerationParams
   ): Promise<VideoGenerateResponse> {
-    // aspectRatio に応じてサイズを決定（デフォルト: 9:16 縦型）
-    const isVertical = params.aspectRatio === "9:16" || !params.aspectRatio;
-    const size = isVertical ? "720*1280" : "1280*720";
+    const isWan26 = WAN_26_MODELS.includes(this.model);
+
+    // Wan 2.6 と 2.1 でリクエストパラメータが異なる
+    const body: Record<string, unknown> = {
+      image: params.imageUrl,
+      prompt: params.prompt,
+      duration: params.duration || 5,
+    };
+
+    if (isWan26) {
+      body.resolution = "720p";
+      body.negative_prompt =
+        "watermark, text overlay, distortion, blurry, low quality";
+    } else {
+      const isVertical = params.aspectRatio === "9:16" || !params.aspectRatio;
+      body.size = isVertical ? "720*1280" : "1280*720";
+    }
 
     const response = await fetch(`${BASE_URL}/${this.modelPath}`, {
       method: "POST",
@@ -61,16 +75,7 @@ export class WaveSpeedProvider implements VideoProvider {
         Authorization: `Bearer ${getApiKey()}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        image: params.imageUrl,
-        prompt: params.prompt,
-        size,
-        duration: params.duration || 5,
-        ...(WAN_26_MODELS.includes(this.model) && {
-          negative_prompt:
-            "watermark, text overlay, distortion, blurry, low quality",
-        }),
-      }),
+      body: JSON.stringify(body),
     });
 
     if (!response.ok) {
