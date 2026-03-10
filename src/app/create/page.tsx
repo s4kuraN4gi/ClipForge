@@ -63,6 +63,7 @@ export default function CreatePage() {
       productName: string;
       productPrice: string;
       catchphrase: string;
+      customPrompt: string;
     }) => {
       if (!template) return;
 
@@ -115,7 +116,7 @@ export default function CreatePage() {
         ...formData,
       });
     },
-    [template, files, isSampleMode, realGen, sampleGen, addToast]
+    [template, files, duration, isSampleMode, realGen, sampleGen, addToast]
   );
 
   const isGenerating = status === "uploading" || status === "generating";

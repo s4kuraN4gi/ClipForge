@@ -7,13 +7,22 @@ import type {
 
 const BASE_URL = "https://api.wavespeed.ai/api/v3";
 
-export type WaveSpeedModel = "wan-720p" | "wan-720p-fast" | "wan-480p";
+export type WaveSpeedModel =
+  | "wan-2.6-flash"
+  | "wan-2.6"
+  | "wan-720p"
+  | "wan-720p-fast"
+  | "wan-480p";
 
 const MODEL_PATHS: Record<WaveSpeedModel, string> = {
+  "wan-2.6-flash": "wavespeed-ai/wan-2.6/i2v-720p/image-to-video",
+  "wan-2.6": "wavespeed-ai/wan-2.6/i2v-720p/image-to-video",
   "wan-720p": "wavespeed-ai/wan-2.1/i2v-720p",
   "wan-720p-fast": "wavespeed-ai/wan-2.1/i2v-720p-ultra-fast",
   "wan-480p": "wavespeed-ai/wan-2.1/i2v-480p",
 };
+
+const WAN_26_MODELS: WaveSpeedModel[] = ["wan-2.6-flash", "wan-2.6"];
 
 function getApiKey(): string {
   const key = process.env.WAVESPEED_API_KEY;
@@ -31,9 +40,12 @@ export class WaveSpeedProvider implements VideoProvider {
     "wavespeed.ai",
   ];
 
-  constructor(model: WaveSpeedModel = "wan-720p") {
+  private model: WaveSpeedModel;
+
+  constructor(model: WaveSpeedModel = "wan-2.6-flash") {
+    this.model = model;
     this.modelPath =
-      MODEL_PATHS[model] || MODEL_PATHS["wan-720p"];
+      MODEL_PATHS[model] || MODEL_PATHS["wan-2.6-flash"];
   }
 
   async createGeneration(
@@ -54,6 +66,10 @@ export class WaveSpeedProvider implements VideoProvider {
         prompt: params.prompt,
         size,
         duration: params.duration || 5,
+        ...(WAN_26_MODELS.includes(this.model) && {
+          negative_prompt:
+            "watermark, text overlay, distortion, blurry, low quality",
+        }),
       }),
     });
 

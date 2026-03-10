@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { createVideoGeneration } from "@/lib/video-provider";
+import { createVideoGeneration, getProviderTypeForPlan } from "@/lib/video-provider";
+import type { ProviderType } from "@/lib/video-provider";
 import { TEMPLATES, PRO_SAFETY_CAP, PRO_EXTRA_PRICE } from "@/lib/constants";
+import { buildVideoPrompt } from "@/lib/prompt-builder";
 import {
   checkVideoLimit,
   tryIncrementVideoCount,
@@ -21,6 +23,7 @@ interface GenerateRequestBody {
   productName?: string;
   productPrice?: string;
   catchphrase?: string;
+  customPrompt?: string;
   confirmExtra?: boolean;
 }
 
@@ -100,6 +103,12 @@ export async function POST(request: NextRequest) {
     if (body.catchphrase && body.catchphrase.length > 200) {
       return NextResponse.json(
         { error: "キャッチフレーズは200文字以内で入力してください" },
+        { status: 400 }
+      );
+    }
+    if (body.customPrompt && body.customPrompt.length > 200) {
+      return NextResponse.json(
+        { error: "カスタムプロンプトは200文字以内で入力してください" },
         { status: 400 }
       );
     }
@@ -205,27 +214,33 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // テンプレートに基づくプロンプト生成
-    let prompt = template.prompt;
-    if (body.productName) {
-      const sanitized = body.productName.replace(/[\x00-\x1F\x7F]/g, "").trim();
-      if (sanitized) {
-        prompt += `, featuring "${sanitized}"`;
-      }
-    }
+    // プロンプト生成
+    const prompt = buildVideoPrompt({
+      templatePrompt: template.prompt,
+      productName: body.productName,
+      customPrompt: body.customPrompt,
+    });
 
     // 無料プランは透かし付き
     const useWatermark = limitResult.plan === "free";
 
+    // プラン別プロバイダー選択
+    const providerType: ProviderType = getProviderTypeForPlan(
+      limitResult.plan as "free" | "pro"
+    );
+
     // 動画生成タスクを作成
-    const result = await createVideoGeneration({
-      imageUrl: body.imageUrls[0],
-      prompt,
-      duration: requestedDuration,
-      resolution: "1080p",
-      aspectRatio: "9:16",
-      watermark: useWatermark,
-    });
+    const result = await createVideoGeneration(
+      {
+        imageUrl: body.imageUrls[0],
+        prompt,
+        duration: requestedDuration,
+        resolution: "1080p",
+        aspectRatio: "9:16",
+        watermark: useWatermark,
+      },
+      providerType,
+    );
 
     // カウントをアトミックにインクリメント
     if (limitResult.plan === "free") {
@@ -266,6 +281,7 @@ export async function POST(request: NextRequest) {
           project_id: projectId,
           task_id: result.id,
           status: "pending",
+          provider_type: providerType,
         });
 
       if (videoError) {

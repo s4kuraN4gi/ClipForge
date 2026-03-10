@@ -26,6 +26,7 @@ interface GenerateParams {
   productName?: string;
   productPrice?: string;
   catchphrase?: string;
+  customPrompt?: string;
   confirmExtra?: boolean;
 }
 

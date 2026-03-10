@@ -6,24 +6,27 @@ import type {
 } from "./types";
 import { SeedanceProvider } from "./providers/seedance";
 import { WaveSpeedProvider } from "./providers/wavespeed";
+import { KlingProvider } from "./providers/kling";
 import { MockProvider } from "./providers/mock";
 
 export type { VideoGenerateResponse, VideoTaskStatus, VideoGenerationParams };
 
-type ProviderType =
+export type ProviderType =
   | "seedance"
   | "wavespeed"
   | "wavespeed-fast"
+  | "kling"
   | "mock";
 
 const VALID_PROVIDERS: ProviderType[] = [
   "seedance",
   "wavespeed",
   "wavespeed-fast",
+  "kling",
   "mock",
 ];
 
-function resolveProviderType(): ProviderType {
+function resolveDefaultProviderType(): ProviderType {
   const explicit = process.env.VIDEO_PROVIDER as ProviderType | undefined;
   if (explicit && VALID_PROVIDERS.includes(explicit)) {
     return explicit;
@@ -42,44 +45,65 @@ function resolveProviderType(): ProviderType {
   return "seedance";
 }
 
-let _provider: VideoProvider | null = null;
+/**
+ * プラン別プロバイダー選択
+ * Free → WaveSpeed (Wan 2.6 Flash)
+ * Pro  → Kling 3.0 (Replicate経由)
+ */
+export function getProviderTypeForPlan(plan: "free" | "pro"): ProviderType {
+  if (plan === "pro" && process.env.REPLICATE_API_TOKEN) {
+    return "kling";
+  }
+  return "wavespeed";
+}
 
-function getProvider(): VideoProvider {
-  if (_provider) return _provider;
+const _providers = new Map<ProviderType, VideoProvider>();
 
-  const type = resolveProviderType();
+function getProvider(type?: ProviderType): VideoProvider {
+  const resolvedType = type || resolveDefaultProviderType();
 
-  switch (type) {
+  const cached = _providers.get(resolvedType);
+  if (cached) return cached;
+
+  let provider: VideoProvider;
+
+  switch (resolvedType) {
     case "seedance":
-      _provider = new SeedanceProvider();
+      provider = new SeedanceProvider();
       break;
     case "wavespeed":
-      _provider = new WaveSpeedProvider("wan-720p");
+      provider = new WaveSpeedProvider("wan-2.6-flash");
       break;
     case "wavespeed-fast":
-      _provider = new WaveSpeedProvider("wan-720p-fast");
+      provider = new WaveSpeedProvider("wan-720p-fast");
+      break;
+    case "kling":
+      provider = new KlingProvider();
       break;
     case "mock":
-      _provider = new MockProvider();
+      provider = new MockProvider();
       break;
   }
 
-  console.log(`[video-provider] Using provider: ${type}`);
-  return _provider!;
+  _providers.set(resolvedType, provider);
+  console.log(`[video-provider] Using provider: ${resolvedType}`);
+  return provider;
 }
 
 export async function createVideoGeneration(
-  params: VideoGenerationParams
+  params: VideoGenerationParams,
+  providerType?: ProviderType,
 ): Promise<VideoGenerateResponse> {
-  return getProvider().createGeneration(params);
+  return getProvider(providerType).createGeneration(params);
 }
 
 export async function getTaskStatus(
-  taskId: string
+  taskId: string,
+  providerType?: ProviderType,
 ): Promise<VideoTaskStatus> {
-  return getProvider().getStatus(taskId);
+  return getProvider(providerType).getStatus(taskId);
 }
 
-export function getVideoAllowedHosts(): string[] {
-  return getProvider().allowedVideoHosts;
+export function getVideoAllowedHosts(providerType?: ProviderType): string[] {
+  return getProvider(providerType).allowedVideoHosts;
 }

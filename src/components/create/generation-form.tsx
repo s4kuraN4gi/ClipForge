@@ -9,6 +9,7 @@ interface GenerationFormProps {
     productName: string;
     productPrice: string;
     catchphrase: string;
+    customPrompt: string;
   }) => void;
   isGenerating: boolean;
   submitLabel?: string;
@@ -22,10 +23,11 @@ export function GenerationForm({
   const [productName, setProductName] = useState("");
   const [productPrice, setProductPrice] = useState("");
   const [catchphrase, setCatchphrase] = useState("");
+  const [customPrompt, setCustomPrompt] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({ productName, productPrice, catchphrase });
+    onSubmit({ productName, productPrice, catchphrase, customPrompt });
   };
 
   return (
@@ -56,6 +58,26 @@ export function GenerationForm({
         onChange={(e) => setCatchphrase(e.target.value)}
         placeholder="例: 手に馴染む、一生モノの革財布"
       />
+
+      <details className="group rounded-lg border border-border p-3">
+        <summary className="cursor-pointer text-sm font-medium text-muted-foreground select-none">
+          上級者向けオプション
+        </summary>
+        <div className="mt-3">
+          <Input
+            label="カスタムプロンプト（英語推奨）"
+            optional
+            type="text"
+            value={customPrompt}
+            onChange={(e) => setCustomPrompt(e.target.value)}
+            placeholder="例: slow dolly zoom with dramatic lighting"
+            maxLength={200}
+          />
+          <p className="mt-1 text-xs text-muted-foreground">
+            入力するとテンプレートのプロンプトを上書きします
+          </p>
+        </div>
+      </details>
 
       <Button
         type="submit"

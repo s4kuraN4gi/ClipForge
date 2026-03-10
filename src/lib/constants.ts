@@ -16,7 +16,7 @@ export const TEMPLATES: Template[] = [
     icon: "📦",
     category: "basic",
     prompt:
-      "Smooth product showcase with gentle camera movement, professional lighting, clean background transitions between each product angle",
+      "slowly rotating on a turntable, smooth orbit camera, soft studio lighting with white background, clean product photography",
   },
   {
     id: "rotation",
@@ -25,7 +25,7 @@ export const TEMPLATES: Template[] = [
     icon: "🔄",
     category: "basic",
     prompt:
-      "Smooth 360 degree rotation effect around the product, seamless transitions between different angles, professional turntable-style presentation",
+      "smooth 360 degree continuous rotation on turntable, seamless loop, even studio lighting from all angles, product centered in frame",
   },
   {
     id: "close_up",
@@ -34,7 +34,7 @@ export const TEMPLATES: Template[] = [
     icon: "🔍",
     category: "basic",
     prompt:
-      "Extreme close-up macro shot revealing fine textures and material details, slow gentle camera drift across the surface, shallow depth of field with soft bokeh background",
+      "extreme macro close-up slowly drifting across surface textures, shallow depth of field with creamy bokeh, revealing fine material details and craftsmanship",
   },
   {
     id: "minimal",
@@ -43,7 +43,7 @@ export const TEMPLATES: Template[] = [
     icon: "⬜",
     category: "basic",
     prompt:
-      "Clean minimal presentation on pure white background, soft even lighting with no shadows, subtle slow zoom emphasizing product silhouette",
+      "clean minimal presentation on pure white infinity background, soft even shadowless lighting, subtle slow push-in zoom on product silhouette",
   },
   // ── 演出（Effects） ──
   {
@@ -53,7 +53,7 @@ export const TEMPLATES: Template[] = [
     icon: "✨",
     category: "effects",
     prompt:
-      "Dramatic before and after transformation, split screen transition effect, revealing the improved result with satisfying motion",
+      "dramatic before-and-after split wipe transition from left to right, dull version transforms into vibrant polished result, satisfying reveal with flash of light",
   },
   {
     id: "dramatic",
@@ -62,7 +62,7 @@ export const TEMPLATES: Template[] = [
     icon: "🎬",
     category: "effects",
     prompt:
-      "Cinematic dramatic lighting with deep shadows and golden highlights, slow reveal with lens flare, luxury brand advertisement style",
+      "cinematic slow reveal from darkness, deep shadows with warm golden rim lighting, subtle lens flare, luxury brand commercial, moody atmosphere",
   },
   {
     id: "sparkle",
@@ -71,7 +71,7 @@ export const TEMPLATES: Template[] = [
     icon: "💎",
     category: "effects",
     prompt:
-      "Sparkling glitter and light refraction effects around the product, shimmering particles floating in the air, jewelry commercial style presentation",
+      "sparkling light refractions on surface, shimmering particles floating, slow rotation under spotlight, jewelry commercial with black velvet background",
   },
   {
     id: "zoom_in",
@@ -80,7 +80,7 @@ export const TEMPLATES: Template[] = [
     icon: "🎯",
     category: "effects",
     prompt:
-      "Dynamic zoom-in from wide establishing shot to tight close-up, smooth accelerating camera movement, attention-grabbing reveal effect",
+      "dynamic dolly zoom from wide establishing shot to tight close-up, smooth accelerating camera push, dramatic rack focus pulling attention to product center",
   },
   // ── シーン（Scene） ──
   {
@@ -90,7 +90,7 @@ export const TEMPLATES: Template[] = [
     icon: "🏠",
     category: "scene",
     prompt:
-      "Warm lifestyle setting with natural daylight, cozy home environment, product placed naturally in everyday scene with gentle camera panning",
+      "warm lifestyle scene with golden hour natural window light, cozy home interior, product placed on wooden table, gentle camera pan with shallow depth of field",
   },
   {
     id: "gift",
@@ -99,7 +99,7 @@ export const TEMPLATES: Template[] = [
     icon: "🎁",
     category: "scene",
     prompt:
-      "Gift unwrapping reveal with ribbon and wrapping paper, festive warm lighting, elegant presentation as a present with anticipation buildup",
+      "elegant gift unwrapping reveal with satin ribbon slowly untying, festive warm bokeh lights in background, anticipation buildup with final product reveal",
   },
   {
     id: "seasonal",
@@ -108,7 +108,7 @@ export const TEMPLATES: Template[] = [
     icon: "🌸",
     category: "scene",
     prompt:
-      "Seasonal atmosphere with cherry blossoms or autumn leaves gently falling, soft natural lighting evoking the current season, dreamy aesthetic",
+      "soft cherry blossom petals gently falling around product, warm spring sunlight with lens flare, dreamy pastel color palette, slow gentle camera drift",
   },
   {
     id: "floating",
@@ -117,7 +117,7 @@ export const TEMPLATES: Template[] = [
     icon: "🫧",
     category: "scene",
     prompt:
-      "Product floating weightlessly in mid-air with soft bubbles and particles, ethereal dreamy atmosphere, gentle rotation while suspended",
+      "product floating weightlessly in mid-air with soft light particles and bubbles, ethereal dreamy gradient background, gentle slow rotation while suspended",
   },
 ];
 

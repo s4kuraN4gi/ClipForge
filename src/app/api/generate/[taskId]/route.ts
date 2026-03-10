@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { getTaskStatus, getVideoAllowedHosts } from "@/lib/video-provider";
+import type { ProviderType } from "@/lib/video-provider";
 import {
   decrementVideoCount,
   decrementExtraVideoCount,
   getSubscription,
 } from "@/lib/subscription";
 import { PRO_INCLUDED_VIDEOS } from "@/lib/constants";
+import { TEMPLATES } from "@/lib/constants";
+import { postProcessVideo } from "@/lib/ffmpeg/processor";
+import type { TemplateCategory } from "@/types";
 
 export async function GET(
   _request: NextRequest,
@@ -38,7 +42,7 @@ export async function GET(
     // 所有権チェック: このユーザーが作成した動画タスクか確認（IDOR 対策）
     const { data: ownerCheck } = await supabase
       .from("generated_videos")
-      .select("id, project_id, projects!inner(user_id)")
+      .select("id, project_id, provider_type, projects!inner(user_id)")
       .eq("task_id", taskId)
       .single();
 
@@ -57,7 +61,8 @@ export async function GET(
       );
     }
 
-    const status = await getTaskStatus(taskId);
+    const providerType = (ownerCheck as unknown as { provider_type?: string }).provider_type as ProviderType | undefined;
+    const status = await getTaskStatus(taskId, providerType);
 
     // DB の generated_videos を更新
     {
@@ -74,7 +79,7 @@ export async function GET(
         // 動画を Storage に保存（SSRF対策: 許可ドメインのみfetch）
         try {
           const videoUrl = status.data.video_url;
-          const allowedHosts = getVideoAllowedHosts();
+          const allowedHosts = getVideoAllowedHosts(providerType);
           let isAllowed = false;
           try {
             const parsed = new URL(videoUrl);
@@ -108,12 +113,44 @@ export async function GET(
               .single();
 
             if (videoRecord) {
+              // プロジェクト情報を取得（FFmpeg後処理用）
+              const { data: projectData } = await supabase
+                .from("projects")
+                .select("product_name, product_price, catchphrase, template")
+                .eq("id", videoRecord.project_id)
+                .single();
+
+              // ユーザーのプランを確認（透かし判定）
+              const subscription = await getSubscription(user.id);
+              const isFreeUser = !subscription || subscription.plan === "free";
+
+              const templateDef = projectData?.template
+                ? TEMPLATES.find((t) => t.id === projectData.template)
+                : null;
+
+              // FFmpeg 後処理
+              let finalBuffer: Buffer;
+              try {
+                const processed = await postProcessVideo({
+                  videoBuffer,
+                  productName: projectData?.product_name,
+                  productPrice: projectData?.product_price,
+                  catchphrase: projectData?.catchphrase,
+                  templateCategory: (templateDef?.category || "basic") as TemplateCategory,
+                  addWatermark: isFreeUser,
+                });
+                finalBuffer = processed.buffer;
+              } catch (ffmpegErr) {
+                console.error("FFmpeg post-processing failed, using raw video:", ffmpegErr);
+                finalBuffer = Buffer.from(videoBuffer);
+              }
+
               const serviceClient = createServiceClient();
               const storagePath = `${user.id}/${videoRecord.project_id}/${taskId}.mp4`;
 
               const { error: uploadError } = await serviceClient.storage
                 .from("generated-videos")
-                .upload(storagePath, videoBuffer, {
+                .upload(storagePath, finalBuffer, {
                   contentType: "video/mp4",
                   upsert: true,
                 });
