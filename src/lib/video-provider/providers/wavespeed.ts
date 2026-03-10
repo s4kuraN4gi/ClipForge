@@ -15,8 +15,8 @@ export type WaveSpeedModel =
   | "wan-480p";
 
 const MODEL_PATHS: Record<WaveSpeedModel, string> = {
-  "wan-2.6-flash": "wavespeed-ai/wan-2.6/i2v-720p/image-to-video",
-  "wan-2.6": "wavespeed-ai/wan-2.6/i2v-720p/image-to-video",
+  "wan-2.6-flash": "alibaba/wan-2.6/image-to-video-flash",
+  "wan-2.6": "alibaba/wan-2.6/image-to-video",
   "wan-720p": "wavespeed-ai/wan-2.1/i2v-720p",
   "wan-720p-fast": "wavespeed-ai/wan-2.1/i2v-720p-ultra-fast",
   "wan-480p": "wavespeed-ai/wan-2.1/i2v-480p",
