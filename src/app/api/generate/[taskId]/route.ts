@@ -64,6 +64,8 @@ export async function GET(
     const providerType = (ownerCheck as unknown as { provider_type?: string }).provider_type as ProviderType | undefined;
     const status = await getTaskStatus(taskId, providerType);
 
+    let completedStoragePath: string | null = null;
+
     // DB の generated_videos を更新
     {
       const updateData: Record<string, unknown> = {
@@ -167,6 +169,7 @@ export async function GET(
 
               if (!uploadError) {
                 updateData.storage_path = storagePath;
+                completedStoragePath = storagePath;
               } else {
                 console.error("[FFmpeg] Video storage upload error:", uploadError);
               }
@@ -232,11 +235,25 @@ export async function GET(
         .eq("task_id", taskId);
     }
 
+    // Storage に後処理済み動画がある場合は署名付きURLを返す
+    let responseVideoUrl: string | null = status.data?.video_url ?? null;
+
+    if (status.status === "completed" && completedStoragePath) {
+      const serviceClient = createServiceClient();
+      const { data: signedData } = await serviceClient.storage
+        .from("generated-videos")
+        .createSignedUrl(completedStoragePath, 3600);
+
+      if (signedData?.signedUrl) {
+        responseVideoUrl = signedData.signedUrl;
+      }
+    }
+
     return NextResponse.json({
       taskId: status.id,
       status: status.status,
       progress: status.progress,
-      videoUrl: status.data?.video_url ?? null,
+      videoUrl: responseVideoUrl,
       error: status.error ?? null,
     });
   } catch (error) {
