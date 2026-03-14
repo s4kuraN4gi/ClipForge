@@ -36,7 +36,7 @@ export class WaveSpeedProvider implements VideoProvider {
   private modelPath: string;
   // WaveSpeed は CloudFront CDN 経由で動画を配信
   readonly allowedVideoHosts = [
-    "d2p7pge43lyniu.cloudfront.net",
+    "cloudfront.net",
     "wavespeed.ai",
   ];
 
