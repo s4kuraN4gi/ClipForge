@@ -5,8 +5,10 @@ import type {
   VideoGenerationParams,
 } from "../types";
 
-const BASE_URL = "https://api.replicate.com/v1/predictions";
-const MODEL_VERSION = "kwaivgi/kling-v3-omni-video";
+const PREDICTIONS_URL = "https://api.replicate.com/v1/predictions";
+const MODEL_OWNER = "kwaivgi";
+const MODEL_NAME = "kling-v3-omni-video";
+const CREATE_URL = `https://api.replicate.com/v1/models/${MODEL_OWNER}/${MODEL_NAME}/predictions`;
 
 function getApiToken(): string {
   const token = process.env.REPLICATE_API_TOKEN;
@@ -25,7 +27,7 @@ export class KlingProvider implements VideoProvider {
   async createGeneration(
     params: VideoGenerationParams
   ): Promise<VideoGenerateResponse> {
-    const response = await fetch(BASE_URL, {
+    const response = await fetch(CREATE_URL, {
       method: "POST",
       headers: {
         Authorization: `Token ${getApiToken()}`,
@@ -33,7 +35,6 @@ export class KlingProvider implements VideoProvider {
         Prefer: "wait",
       },
       body: JSON.stringify({
-        model: MODEL_VERSION,
         input: {
           image: params.imageUrl,
           prompt: params.prompt,
@@ -60,7 +61,7 @@ export class KlingProvider implements VideoProvider {
   }
 
   async getStatus(taskId: string): Promise<VideoTaskStatus> {
-    const response = await fetch(`${BASE_URL}/${taskId}`, {
+    const response = await fetch(`${PREDICTIONS_URL}/${taskId}`, {
       headers: {
         Authorization: `Token ${getApiToken()}`,
       },
