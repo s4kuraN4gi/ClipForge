@@ -47,13 +47,10 @@ function resolveDefaultProviderType(): ProviderType {
 
 /**
  * プラン別プロバイダー選択
- * Free → WaveSpeed (Wan 2.6 Flash)
- * Pro  → Kling 3.0 (Replicate経由)
+ * 現在は全プラン WaveSpeed (Wan 2.6 Flash) に統一。
+ * Kling 3.0 は有料ユーザー増加後に Pro 限定で再導入予定。
  */
-export function getProviderTypeForPlan(plan: "free" | "pro"): ProviderType {
-  if (plan === "pro" && process.env.REPLICATE_API_TOKEN) {
-    return "kling";
-  }
+export function getProviderTypeForPlan(_plan: "free" | "pro"): ProviderType {
   return "wavespeed";
 }
 
