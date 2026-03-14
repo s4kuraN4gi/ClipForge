@@ -214,10 +214,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // プロンプト生成
+    // プロンプト生成（モーション・カメラ指示のみ。商品名はFFmpegオーバーレイで表示）
     const prompt = buildVideoPrompt({
       templatePrompt: template.prompt,
-      productName: body.productName,
       customPrompt: body.customPrompt,
     });
 
