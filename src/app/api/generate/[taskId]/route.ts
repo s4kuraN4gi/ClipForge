@@ -102,8 +102,11 @@ export async function GET(
           }
 
           const videoResponse = await fetch(videoUrl);
-          if (videoResponse.ok) {
+          if (!videoResponse.ok) {
+            console.error("[FFmpeg] Video fetch failed:", videoResponse.status);
+          } else {
             const videoBuffer = await videoResponse.arrayBuffer();
+            console.log("[FFmpeg] Video downloaded, size:", videoBuffer.byteLength);
 
             // generated_videos レコードからproject_idを取得
             const { data: videoRecord } = await supabase
@@ -112,13 +115,17 @@ export async function GET(
               .eq("task_id", taskId)
               .single();
 
-            if (videoRecord) {
+            if (!videoRecord) {
+              console.error("[FFmpeg] videoRecord not found for taskId:", taskId);
+            } else {
               // プロジェクト情報を取得（FFmpeg後処理用）
-              const { data: projectData } = await supabase
+              const { data: projectData, error: projectError } = await supabase
                 .from("projects")
                 .select("product_name, product_price, catchphrase, template")
                 .eq("id", videoRecord.project_id)
                 .single();
+
+              console.log("[FFmpeg] projectData:", JSON.stringify(projectData), "error:", projectError);
 
               // ユーザーのプランを確認（透かし判定）
               const subscription = await getSubscription(user.id);
@@ -127,6 +134,8 @@ export async function GET(
               const templateDef = projectData?.template
                 ? TEMPLATES.find((t) => t.id === projectData.template)
                 : null;
+
+              console.log("[FFmpeg] Starting post-process. template:", templateDef?.category, "watermark:", isFreeUser);
 
               // FFmpeg 後処理
               let finalBuffer: Buffer;
@@ -140,8 +149,9 @@ export async function GET(
                   addWatermark: isFreeUser,
                 });
                 finalBuffer = processed.buffer;
+                console.log("[FFmpeg] Post-process success, output size:", finalBuffer.byteLength);
               } catch (ffmpegErr) {
-                console.error("FFmpeg post-processing failed, using raw video:", ffmpegErr);
+                console.error("[FFmpeg] Post-processing failed, using raw video:", ffmpegErr);
                 finalBuffer = Buffer.from(videoBuffer);
               }
 
@@ -158,7 +168,7 @@ export async function GET(
               if (!uploadError) {
                 updateData.storage_path = storagePath;
               } else {
-                console.error("Video storage upload error:", uploadError);
+                console.error("[FFmpeg] Video storage upload error:", uploadError);
               }
             }
           }
