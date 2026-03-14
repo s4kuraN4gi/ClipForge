@@ -32,11 +32,11 @@ export class KlingProvider implements VideoProvider {
       headers: {
         Authorization: `Token ${getApiToken()}`,
         "Content-Type": "application/json",
-        Prefer: "wait",
+        Prefer: "wait=60",
       },
       body: JSON.stringify({
         input: {
-          image: params.imageUrl,
+          reference_images: [params.imageUrl],
           prompt: params.prompt,
           duration: params.duration || 5,
           aspect_ratio: params.aspectRatio || "9:16",
