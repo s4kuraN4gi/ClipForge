@@ -113,8 +113,36 @@ export async function postProcessVideo(
       );
     }
 
+    // ── BGM前処理: アルバムアート除去 ──
+    // Pixabay等のMP3にはアルバムアート（カバー画像）が映像ストリームとして
+    // 埋め込まれていることがある。FFmpegはこれを映像入力として認識するため、
+    // filter_complex のストリームインデックスがずれ、意図しない映像が
+    // 出力に混入する原因になる。事前にffmpegで音声のみ抽出して防ぐ。
+    const cleanBgmPath = join(tmpDir, "bgm_clean.aac");
+    try {
+      await execFileAsync("ffmpeg", [
+        "-i", bgmPath,
+        "-vn",              // 映像ストリーム（アルバムアート含む）を除外
+        "-acodec", "copy",  // 再エンコードせずコピー（高速）
+        "-y", cleanBgmPath,
+      ], { timeout: 10_000 });
+    } catch {
+      // acodec copy が失敗する場合は再エンコード（MP3→AAC）
+      await execFileAsync("ffmpeg", [
+        "-i", bgmPath,
+        "-vn",
+        "-acodec", "aac",
+        "-b:a", "128k",
+        "-y", cleanBgmPath,
+      ], { timeout: 15_000 });
+    }
+
     // filter_complex の構築
-    const args: string[] = ["-i", inputPath, "-i", bgmPath];
+    // 入力構成（アルバムアート除去済み）:
+    //   input 0: AI生成動画 (映像のみ)
+    //   input 1: BGM (音声のみ、映像ストリームなし)
+    //   input 2: ロゴPNG (透かし用、addWatermark時のみ)
+    const args: string[] = ["-i", inputPath, "-i", cleanBgmPath];
     let filterComplex: string;
 
     if (opts.addWatermark) {
