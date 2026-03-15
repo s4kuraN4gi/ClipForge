@@ -27,6 +27,7 @@ export interface PostProcessOptions {
   catchphrase?: string | null;
   templateCategory: TemplateCategory;
   addWatermark: boolean;
+  duration?: number; // 動画の長さ（秒）。デフォルト5
 }
 
 export interface PostProcessResult {
@@ -51,6 +52,22 @@ export async function postProcessVideo(
 
     await writeFile(inputPath, Buffer.from(opts.videoBuffer));
 
+    // 動画の実際の長さを ffprobe で取得（API指定値と微妙にずれる場合がある）
+    let dur = opts.duration || 5;
+    try {
+      const { stdout } = await execFileAsync("ffprobe", [
+        "-v", "error",
+        "-show_entries", "format=duration",
+        "-of", "csv=p=0",
+        inputPath,
+      ]);
+      const probedDuration = parseFloat(stdout.trim());
+      if (probedDuration > 0 && isFinite(probedDuration)) {
+        dur = Math.round(probedDuration);
+      }
+    } catch {
+      // ffprobe 失敗時は opts.duration を使用
+    }
     const assetsDir = getAssetsDir();
     const bgmFile = BGM_MAP[opts.templateCategory] || BGM_MAP.basic;
     const bgmPath = join(assetsDir, "bgm", bgmFile);
@@ -66,7 +83,7 @@ export async function postProcessVideo(
 
     // フェードイン/アウト
     videoFilters.push("fade=in:0:d=0.5");
-    videoFilters.push("fade=out:st=4.5:d=0.5");
+    videoFilters.push(`fade=out:st=${dur - 0.5}:d=0.5`);
 
     // テキストオーバーレイ
     if (opts.productName) {
@@ -120,11 +137,11 @@ export async function postProcessVideo(
     args.push("-map", "1:a");
     args.push(
       "-af",
-      "afade=in:0:d=0.5,afade=out:st=4:d=1,volume=0.3"
+      `afade=in:0:d=0.5,afade=out:st=${dur - 1}:d=1,volume=0.3`
     );
     // -shortest は -filter_complex と併用時に無視されるバグがあるため
     // -t で明示的に出力時間を制限する（FFmpeg Bug #3789）
-    args.push("-t", "5");
+    args.push("-t", String(dur));
 
     // エンコード設定
     args.push(
