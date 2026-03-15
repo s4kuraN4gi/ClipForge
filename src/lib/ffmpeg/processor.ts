@@ -122,7 +122,9 @@ export async function postProcessVideo(
       "-af",
       "afade=in:0:d=0.5,afade=out:st=4:d=1,volume=0.3"
     );
-    args.push("-shortest");
+    // -shortest は -filter_complex と併用時に無視されるバグがあるため
+    // -t で明示的に出力時間を制限する（FFmpeg Bug #3789）
+    args.push("-t", "5");
 
     // エンコード設定
     args.push(
